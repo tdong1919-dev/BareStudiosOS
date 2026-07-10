@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { BARE_ARTISTS, BARE_SERVICE_CATEGORIES, BARE_TIME_SLOTS } from "@/lib/bare-studios";
+import { BARE_ARTISTS, BARE_SERVICE_CATEGORIES, BARE_STUDIOS, BARE_TIME_SLOTS } from "@/lib/bare-studios";
 
 const inputClass =
   "w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-text-primary placeholder:text-text-muted";
@@ -9,8 +9,10 @@ const allServices = BARE_SERVICE_CATEGORIES.flatMap((category) =>
   category.services.map((service) => ({ ...service, category: category.name })),
 );
 
+const defaultOnlineService = allServices.find((service) => service.category !== "Barbering") ?? allServices[0];
+
 export default function BareBookingFlow() {
-  const [serviceName, setServiceName] = useState(allServices[0]?.name || "");
+  const [serviceName, setServiceName] = useState(defaultOnlineService?.name || "");
   const [artist, setArtist] = useState(BARE_ARTISTS[0]);
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredTime, setPreferredTime] = useState(BARE_TIME_SLOTS[0]);
@@ -23,6 +25,8 @@ export default function BareBookingFlow() {
   const [error, setError] = useState<string | null>(null);
 
   const selectedService = useMemo(() => allServices.find((service) => service.name === serviceName), [serviceName]);
+  const isBarbering = selectedService?.category === "Barbering";
+  const barberDigits = BARE_STUDIOS.barberPhone.replace(/[^0-9]/g, "");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -34,6 +38,7 @@ export default function BareBookingFlow() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (isBarbering) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -49,7 +54,7 @@ export default function BareBookingFlow() {
       }
       setSent(true);
     } catch {
-      setError("Network error — please try again.");
+      setError("Network error - please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -115,27 +120,52 @@ export default function BareBookingFlow() {
           <p className="mt-1 text-sm text-text-secondary">{selectedService?.category} · {selectedService?.duration}</p>
         </div>
 
-        <div className="mt-4 grid gap-3">
-          <select className={inputClass} value={artist} onChange={(e) => setArtist(e.target.value)} aria-label="Artist">
-            {BARE_ARTISTS.map((option) => <option key={option}>{option}</option>)}
-          </select>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input className={inputClass} type="date" value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} aria-label="Preferred date" />
-            <select className={inputClass} value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} aria-label="Preferred time">
-              {BARE_TIME_SLOTS.map((slot) => <option key={slot}>{slot}</option>)}
-            </select>
+        {isBarbering ? (
+          <div className="mt-4 rounded-md border border-border bg-white p-5">
+            <p className="font-serif text-2xl font-medium">Hmm, seems like Andy is booked online.</p>
+            <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+              For barbering, it is best to call or text Andy directly at {BARE_STUDIOS.barberPhone}.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href={`tel:${barberDigits}`}
+                className="rounded-sm bg-gradient-brand px-6 py-3 text-[12px] uppercase tracking-[0.14em] text-white"
+              >
+                Call Andy
+              </a>
+              <a
+                href={`sms:${barberDigits}`}
+                className="rounded-sm border border-text-primary/30 px-6 py-3 text-[12px] uppercase tracking-[0.14em]"
+              >
+                Text Andy
+              </a>
+            </div>
           </div>
-          <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" aria-label="Name" />
-          <input className={inputClass} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" aria-label="Email" />
-          <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" aria-label="Phone" />
-          <textarea className={`${inputClass} min-h-24`} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything we should know?" aria-label="Notes" />
-        </div>
+        ) : (
+          <>
+            <div className="mt-4 grid gap-3">
+              <select className={inputClass} value={artist} onChange={(e) => setArtist(e.target.value)} aria-label="Artist">
+                {BARE_ARTISTS.map((option) => <option key={option}>{option}</option>)}
+              </select>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input className={inputClass} type="date" value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} aria-label="Preferred date" />
+                <select className={inputClass} value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} aria-label="Preferred time">
+                  {BARE_TIME_SLOTS.map((slot) => <option key={slot}>{slot}</option>)}
+                </select>
+              </div>
+              <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" aria-label="Name" />
+              <input className={inputClass} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" aria-label="Email" />
+              <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" aria-label="Phone" />
+              <textarea className={`${inputClass} min-h-24`} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything we should know?" aria-label="Notes" />
+            </div>
 
-        {error && <p className="mt-3 text-sm text-error">{error}</p>}
-        <button type="submit" disabled={submitting} className="mt-4 w-full rounded-sm bg-gradient-brand px-6 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white disabled:opacity-50">
-          {submitting ? "Saving..." : "Request appointment"}
-        </button>
-        <p className="mt-3 text-center text-xs text-text-muted">Appointment requests are reviewed by Bare Studios before confirmation.</p>
+            {error && <p className="mt-3 text-sm text-error">{error}</p>}
+            <button type="submit" disabled={submitting} className="mt-4 w-full rounded-sm bg-gradient-brand px-6 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white disabled:opacity-50">
+              {submitting ? "Saving..." : "Request appointment"}
+            </button>
+            <p className="mt-3 text-center text-xs text-text-muted">Appointment requests are reviewed by Bare Studios before confirmation.</p>
+          </>
+        )}
       </section>
     </form>
   );

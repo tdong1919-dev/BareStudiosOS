@@ -46,7 +46,7 @@ export default function AboutPage() {
               Book an appointment
             </Link>
             <Link href="/suite-rental" className="rounded-sm border border-text-primary/30 px-7 py-3.5 text-[12px] uppercase tracking-[0.14em]">
-              Suite rentals
+              Rent + careers
             </Link>
           </div>
         </div>

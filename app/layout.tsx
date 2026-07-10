@@ -15,9 +15,9 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  title: "Bare Studios | Facials, Lashes, Brows & Skin in Bel Air",
+  title: "Bare Studios | Barber, Hair, Lashes, Brows & Skin in Bel Air",
   description:
-    "Book facials, Dermalogica Luminfusion, microneedling, chemical peels, lashes, brows, waxing, and permanent makeup at Bare Studios in Downtown Bel Air.",
+    "Book barbering, hair, lashes, brows, facials, Dermalogica Luminfusion, microneedling, chemical peels, waxing, and permanent makeup at Bare Studios in Downtown Bel Air.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

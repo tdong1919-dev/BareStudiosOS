@@ -2,14 +2,23 @@ export const BARE_STUDIOS = {
   name: "Bare Studios",
   address: "12 N Main St #2, Bel Air, MD 21014",
   phone: "(443) 278-3919",
+  conciergePhone: "(443) 278-3919",
+  barberPhone: "(443) 559-2037",
+  careersPhone: "(443) 564-0030",
   website: "https://www.barestudios.site",
 };
 
 export const BARE_SERVICE_CATEGORIES = [
   {
+    name: "Barbering",
+    services: [
+      { name: "Barbering with Andy", duration: "Call or text to book", deposit: "Book directly with Andy" },
+    ],
+  },
+  {
     name: "Facials & skin",
     services: [
-      { name: "Customized Dermalogica Facial", duration: "60 min", deposit: "Optional deposit" },
+      { name: "Custom Facial", duration: "60 min", deposit: "Optional deposit" },
       { name: "Dermalogica Luminfusion / Glass Skin Facial", duration: "75 min", deposit: "Deposit recommended" },
       { name: "Microneedling", duration: "75 min", deposit: "Deposit recommended" },
       { name: "Chemical Peel", duration: "45 min", deposit: "Optional deposit" },
@@ -18,6 +27,7 @@ export const BARE_SERVICE_CATEGORIES = [
   {
     name: "Lashes & brows",
     services: [
+      { name: "Classic Lash Extensions", duration: "Full set", deposit: "Deposit recommended" },
       { name: "Brow Lamination", duration: "45 min", deposit: "Optional deposit" },
       { name: "Lash Lift and Tint", duration: "60 min", deposit: "Optional deposit" },
       { name: "Korean Lash Lift and Tint", duration: "60 min", deposit: "Optional deposit" },

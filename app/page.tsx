@@ -3,26 +3,38 @@ import { BARE_SERVICE_CATEGORIES, BARE_STUDIOS } from "@/lib/bare-studios";
 
 const FEATURED_SERVICES = [
   {
-    name: "Dermalogica Luminfusion",
-    detail: "Glass-skin glow, radiance, and smoother texture.",
-    href: "/book?service=Dermalogica%20Luminfusion%20%2F%20Glass%20Skin%20Facial",
+    name: "Barber",
+    detail: "Clean cuts, grooming, and unisex barbering with Andy.",
+    href: "/book?service=Barbering%20with%20Andy",
   },
   {
-    name: "Microneedling",
-    detail: "A collagen-focused treatment for texture, tone, and renewal.",
-    href: "/book?service=Microneedling",
+    name: "Classic Lash Extensions",
+    detail: "A soft, polished lash set customized to your everyday look.",
+    href: "/book?service=Classic%20Lash%20Extensions",
   },
   {
-    name: "Lash lifts + brows",
-    detail: "Low-maintenance definition for lashes, brows, and everyday confidence.",
-    href: "/book?service=Lash%20Lift%20and%20Tint",
+    name: "Custom Facial",
+    detail: "A personalized skin treatment built around your goals that day.",
+    href: "/book?service=Custom%20Facial",
   },
 ];
 
-const REVIEWS = [
-  "Beautiful space, relaxing energy, and my skin was glowing when I left.",
-  "The team made me feel comfortable and explained every step before my service.",
-  "I finally found a place for facials, brows, and lashes that feels personal.",
+const REVIEW_IMPORTS = [
+  {
+    source: "Google",
+    status: "Google Business Profile",
+    text: "Live Google reviews will appear here once Bare Studios connects the review feed.",
+  },
+  {
+    source: "Vagaro",
+    status: "Past booking reviews",
+    text: "Existing Vagaro reviews can be imported here during the migration so clients can see trusted feedback.",
+  },
+  {
+    source: "Review concierge",
+    status: "Coming next",
+    text: "New reviews can be requested after visits and routed into this section for approval or automatic publishing.",
+  },
 ];
 
 function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
@@ -78,7 +90,7 @@ export default function BareStudiosHomePage() {
               Contact
             </a>
             <Link href="/suite-rental" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-              Suite rentals
+              Rent + Careers
             </Link>
           </nav>
           <BookButton>Book now</BookButton>
@@ -89,11 +101,11 @@ export default function BareStudiosHomePage() {
         <div>
           <Eyebrow>Downtown Bel Air beauty studio</Eyebrow>
           <h1 className="mt-5 font-serif text-5xl font-medium leading-[1.03] tracking-tight sm:text-7xl">
-            Facials, lashes, brows, and skin treatments made personal.
+            Barber, hair, lashes, brows, and skin treatments made personal.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary">
             Bare Studios is a welcoming beauty salon and studio collective in Bel Air, Maryland, offering
-            in-house esthetic services, permanent brows, lash lifts, waxing, and restorative skin treatments.
+            barbering, hair, lash services, brows, waxing, facials, and restorative skin treatments.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <BookButton />
@@ -163,12 +175,12 @@ export default function BareStudiosHomePage() {
           <h2 className="mt-3 font-serif text-4xl font-medium">A place to relax, recharge, and feel like yourself again.</h2>
           <div className="mt-5 space-y-4 leading-relaxed text-text-secondary">
             <p>
-              Bare Studios is more than a beauty salon. It is a supportive studio home for independent beauty
+              Bare Studios is more than a barber and beauty shop. It is a supportive studio home for independent beauty
               professionals and a calm destination for clients who want thoughtful, high-quality care.
             </p>
             <p>
-              Come in for facials, peels, microneedling, waxing, lashes, brows, and permanent makeup services
-              designed to take stress off your plate and help you feel confident in your skin.
+              Come in for unisex services including barbering, lash services, facials, and more, all designed
+              to take stress off your plate and help you feel confident in your skin.
             </p>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -177,7 +189,7 @@ export default function BareStudiosHomePage() {
               href="/suite-rental"
               className="rounded-sm border border-text-primary/30 px-7 py-3.5 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-black/[0.04]"
             >
-              Apply for a suite
+              Rent + careers
             </Link>
           </div>
         </div>
@@ -186,12 +198,14 @@ export default function BareStudiosHomePage() {
       <Section className="py-20">
         <div className="mb-8 text-center">
           <Eyebrow>What clients say</Eyebrow>
-          <h2 className="mt-3 font-serif text-4xl font-medium">Soft, skilled, and confidence-building.</h2>
+          <h2 className="mt-3 font-serif text-4xl font-medium">Reviews imported from Google and Vagaro.</h2>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {REVIEWS.map((review) => (
-            <figure key={review} className="rounded-md border border-border bg-surface-elevated p-6">
-              <blockquote className="font-serif text-2xl leading-snug">&ldquo;{review}&rdquo;</blockquote>
+          {REVIEW_IMPORTS.map((review) => (
+            <figure key={review.source} className="rounded-md border border-border bg-surface-elevated p-6">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">{review.source}</p>
+              <p className="mt-3 font-serif text-2xl leading-snug">{review.text}</p>
+              <figcaption className="mt-5 text-xs uppercase tracking-[0.14em] text-text-muted">{review.status}</figcaption>
             </figure>
           ))}
         </div>
@@ -210,10 +224,10 @@ export default function BareStudiosHomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <BookButton>Request appointment</BookButton>
               <a
-                href={`tel:${BARE_STUDIOS.phone.replace(/[^0-9]/g, "")}`}
+                href={`tel:${BARE_STUDIOS.conciergePhone.replace(/[^0-9]/g, "")}`}
                 className="rounded-sm border border-text-primary/30 px-7 py-3.5 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-black/[0.04]"
               >
-                Call the studio
+                Speak to Concierge
               </a>
             </div>
           </div>

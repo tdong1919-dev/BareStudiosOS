@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { BARE_ARTISTS, BARE_SERVICE_CATEGORIES, BARE_STUDIOS, BARE_TIME_SLOTS } from "@/lib/bare-studios";
+import { BARE_SERVICE_CATEGORIES, BARE_STUDIOS, BARE_TIME_SLOTS, NA_LASH_TIME_SLOTS } from "@/lib/bare-studios";
 
 const inputClass =
   "w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-text-primary placeholder:text-text-muted";
@@ -9,11 +9,27 @@ const allServices = BARE_SERVICE_CATEGORIES.flatMap((category) =>
   category.services.map((service) => ({ ...service, category: category.name })),
 );
 
-const defaultOnlineService = allServices.find((service) => service.category !== "Barbering") ?? allServices[0];
+const defaultOnlineService = allServices.find((service) => service.kind !== "barber" && service.kind !== "addon") ?? allServices[0];
+
+function providerOptions(service: typeof allServices[number] | undefined) {
+  if (!service || service.kind === "addon") {
+    return [{ name: "Concierge", note: "Contact the studio to pair this add-on with a full service." }];
+  }
+  if (service.kind === "lashExtensions") {
+    return [
+      { name: "Na", note: "Available Sundays, 9 AM-7 PM for lash extensions." },
+      { name: "Ciara", note: "Available for lash extensions through August 1." },
+    ];
+  }
+  if (service.kind === "facial" || service.kind === "waxing") {
+    return [{ name: "Ciara", note: "Available for facials and waxing through August 1." }];
+  }
+  return [{ name: "First available", note: "The studio will confirm the best provider for this service." }];
+}
 
 export default function BareBookingFlow() {
   const [serviceName, setServiceName] = useState(defaultOnlineService?.name || "");
-  const [artist, setArtist] = useState(BARE_ARTISTS[0]);
+  const [artist, setArtist] = useState("First available");
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredTime, setPreferredTime] = useState(BARE_TIME_SLOTS[0]);
   const [name, setName] = useState("");
@@ -25,8 +41,25 @@ export default function BareBookingFlow() {
   const [error, setError] = useState<string | null>(null);
 
   const selectedService = useMemo(() => allServices.find((service) => service.name === serviceName), [serviceName]);
-  const isBarbering = selectedService?.category === "Barbering";
+  const isBarbering = selectedService?.kind === "barber";
+  const isAddon = selectedService?.kind === "addon";
+  const options = useMemo(() => providerOptions(selectedService), [selectedService]);
+  const selectedProvider = options.find((option) => option.name === artist) ?? options[0];
+  const timeSlots = artist === "Na" ? NA_LASH_TIME_SLOTS : BARE_TIME_SLOTS;
   const barberDigits = BARE_STUDIOS.barberPhone.replace(/[^0-9]/g, "");
+  const conciergeDigits = BARE_STUDIOS.conciergePhone.replace(/[^0-9]/g, "");
+
+  function validateProviderAvailability() {
+    if (!preferredDate) return null;
+    const selectedDate = new Date(`${preferredDate}T12:00:00`);
+    if (artist === "Na" && selectedDate.getDay() !== 0) {
+      return "Na is available for lash extensions on Sundays from 9 AM-7 PM. Please choose a Sunday or select Ciara.";
+    }
+    if (artist === "Ciara" && preferredDate > "2026-08-01") {
+      return "Ciara is available for these services through August 1. Please choose a date on or before August 1 or contact the concierge.";
+    }
+    return null;
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -36,9 +69,26 @@ export default function BareBookingFlow() {
     }
   }, []);
 
+  useEffect(() => {
+    setArtist(options[0]?.name || "First available");
+    setPreferredTime((options[0]?.name === "Na" ? NA_LASH_TIME_SLOTS : BARE_TIME_SLOTS)[0]);
+  }, [serviceName]);
+
+  useEffect(() => {
+    const availableSlots = artist === "Na" ? NA_LASH_TIME_SLOTS : BARE_TIME_SLOTS;
+    if (!availableSlots.includes(preferredTime)) {
+      setPreferredTime(availableSlots[0]);
+    }
+  }, [artist, preferredTime]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (isBarbering) return;
+    if (isBarbering || isAddon) return;
+    const availabilityError = validateProviderAvailability();
+    if (availabilityError) {
+      setError(availabilityError);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -104,7 +154,8 @@ export default function BareBookingFlow() {
                     }`}
                   >
                     <span className="block text-sm font-medium">{service.name}</span>
-                    <span className="mt-1 block text-xs text-text-secondary">{service.duration} · {service.deposit}</span>
+                    <span className="mt-1 block text-xs text-text-secondary">{service.price} · {service.duration}</span>
+                    {service.note && <span className="mt-1 block text-xs text-text-muted">{service.note}</span>}
                   </button>
                 ))}
               </div>
@@ -117,7 +168,9 @@ export default function BareBookingFlow() {
         <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted">Appointment request</p>
         <div className="mt-4 rounded-md border border-border bg-surface-elevated p-4">
           <p className="font-serif text-2xl">{selectedService?.name || "Select a service"}</p>
-          <p className="mt-1 text-sm text-text-secondary">{selectedService?.category} · {selectedService?.duration}</p>
+          <p className="mt-1 text-sm text-text-secondary">{selectedService?.category} · {selectedService?.price} · {selectedService?.duration}</p>
+          {selectedService?.description && <p className="mt-3 text-sm leading-relaxed text-text-secondary">{selectedService.description}</p>}
+          {selectedService?.bestFor && <p className="mt-3 text-xs uppercase tracking-[0.12em] text-text-muted">Best for: {selectedService.bestFor}</p>}
         </div>
 
         {isBarbering ? (
@@ -127,30 +180,37 @@ export default function BareBookingFlow() {
               For barbering, it is best to call or text Andy directly at {BARE_STUDIOS.barberPhone}.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <a
-                href={`tel:${barberDigits}`}
-                className="rounded-sm bg-gradient-brand px-6 py-3 text-[12px] uppercase tracking-[0.14em] text-white"
-              >
+              <a href={`tel:${barberDigits}`} className="rounded-sm bg-gradient-brand px-6 py-3 text-[12px] uppercase tracking-[0.14em] text-white">
                 Call Andy
               </a>
-              <a
-                href={`sms:${barberDigits}`}
-                className="rounded-sm border border-text-primary/30 px-6 py-3 text-[12px] uppercase tracking-[0.14em]"
-              >
+              <a href={`sms:${barberDigits}`} className="rounded-sm border border-text-primary/30 px-6 py-3 text-[12px] uppercase tracking-[0.14em]">
                 Text Andy
               </a>
             </div>
           </div>
+        ) : isAddon ? (
+          <div className="mt-4 rounded-md border border-border bg-white p-5">
+            <p className="font-serif text-2xl font-medium">Add-ons are paired with a full service.</p>
+            <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+              Please call or text the concierge at {BARE_STUDIOS.conciergePhone} to add this to an appointment.
+            </p>
+            <a href={`tel:${conciergeDigits}`} className="mt-5 inline-flex rounded-sm bg-gradient-brand px-6 py-3 text-[12px] uppercase tracking-[0.14em] text-white">
+              Speak to Concierge
+            </a>
+          </div>
         ) : (
           <>
             <div className="mt-4 grid gap-3">
-              <select className={inputClass} value={artist} onChange={(e) => setArtist(e.target.value)} aria-label="Artist">
-                {BARE_ARTISTS.map((option) => <option key={option}>{option}</option>)}
+              <select className={inputClass} value={artist} onChange={(e) => setArtist(e.target.value)} aria-label="Provider">
+                {options.map((option) => <option key={option.name}>{option.name}</option>)}
               </select>
+              {selectedProvider?.note && <p className="rounded-md border border-border bg-white px-3 py-2 text-xs text-text-secondary">{selectedProvider.note}</p>}
+              {artist === "Na" && <p className="text-xs text-text-muted">Please choose a Sunday appointment window for Na.</p>}
+              {artist === "Ciara" && <p className="text-xs text-text-muted">Please choose a date on or before August 1 for Ciara.</p>}
               <div className="grid gap-3 sm:grid-cols-2">
                 <input className={inputClass} type="date" value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} aria-label="Preferred date" />
                 <select className={inputClass} value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} aria-label="Preferred time">
-                  {BARE_TIME_SLOTS.map((slot) => <option key={slot}>{slot}</option>)}
+                  {timeSlots.map((slot) => <option key={slot}>{slot}</option>)}
                 </select>
               </div>
               <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" aria-label="Name" />

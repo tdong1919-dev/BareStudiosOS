@@ -4,18 +4,21 @@ import { BARE_SERVICE_CATEGORIES, BARE_STUDIOS } from "@/lib/bare-studios";
 const FEATURED_SERVICES = [
   {
     name: "Barber",
+    price: "Call Andy",
     detail: "Clean cuts, grooming, and unisex barbering with Andy.",
     href: "/book?service=Barbering%20with%20Andy",
   },
   {
     name: "Classic Lash Extensions",
+    price: "$150",
     detail: "A soft, polished lash set customized to your everyday look.",
     href: "/book?service=Classic%20Lash%20Extensions",
   },
   {
     name: "Custom Facial",
-    detail: "A personalized skin treatment built around your goals that day.",
-    href: "/book?service=Custom%20Facial",
+    price: "$95",
+    detail: "A customized facial designed to rebalance, hydrate, and brighten the skin.",
+    href: "/book?service=BARE%20SKN%20Signature%20Facial%20(Tier%201)",
   },
 ];
 
@@ -125,7 +128,7 @@ export default function BareStudiosHomePage() {
             <div className="rounded-md border border-border bg-surface-elevated p-5">
               <p className="font-serif text-3xl font-medium">New services added</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                Luminfusion, microneedling, chemical peels, microblading, powder brows, and nano brows.
+                Signature facials, anti-aging facials, dermaplaning, body treatments, lash extensions, brows, waxing, and barbering.
               </p>
             </div>
           </div>
@@ -144,7 +147,10 @@ export default function BareStudiosHomePage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {FEATURED_SERVICES.map((service) => (
             <Link key={service.name} href={service.href} className="group rounded-md border border-border bg-surface p-6 transition-colors hover:bg-surface-elevated">
-              <p className="font-serif text-2xl font-medium">{service.name}</p>
+              <div className="flex items-start justify-between gap-4">
+                <p className="font-serif text-2xl font-medium">{service.name}</p>
+                <span className="shrink-0 text-sm text-text-muted">{service.price}</span>
+              </div>
               <p className="mt-3 min-h-16 text-sm leading-relaxed text-text-secondary">{service.detail}</p>
               <span className="mt-5 inline-flex text-[12px] uppercase tracking-[0.14em] text-text-primary">Book this service</span>
             </Link>
@@ -159,7 +165,7 @@ export default function BareStudiosHomePage() {
                 {category.services.map((service) => (
                   <Link key={service.name} href={`/book?service=${encodeURIComponent(service.name)}`} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-b-0">
                     <span className="text-sm text-text-primary">{service.name}</span>
-                    <span className="shrink-0 text-xs text-text-muted">{service.duration}</span>
+                    <span className="shrink-0 text-xs text-text-muted">{service.price} · {service.duration}</span>
                   </Link>
                 ))}
               </div>

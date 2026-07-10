@@ -60,7 +60,7 @@ export default function OnboardingForm({ defaultBusinessName }: { defaultBusines
         setError(json.error || "Couldn't save the setup.");
         return;
       }
-      window.location.href = "/account";
+      window.location.href = "/dashboard";
     } catch {
       setError("Network error — please try again.");
     } finally {

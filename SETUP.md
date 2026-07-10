@@ -1,4 +1,4 @@
-# JIDOKA Cosmetics OS — Setup & "what's left" checklist
+# Bare Studios OS — Setup & dashboard checklist
 
 This is everything needed to take the app from "builds locally" to "live and fully
 working," plus the bigger features that still need real integrations.
@@ -7,8 +7,7 @@ working," plus the bigger features that still need real integrations.
 
 ## 1. Environment variables
 
-Set these in `.env.local` (local) **and** in your Netlify site (Site settings →
-Environment variables). Most features degrade gracefully if a key is missing.
+Set these in `.env.local` (local) **and** in your Vercel project (Project Settings → Environment Variables). Most features degrade gracefully if a key is missing.
 
 | Variable | Powers | Where to get it | Status |
 |---|---|---|---|
@@ -17,7 +16,7 @@ Environment variables). Most features degrade gracefully if a key is missing.
 | `SHEETS_SHEET_ID` | Sheet **reads** (reviews hub, complaint re-ping, client re-engagement) | the long string between `/d/` and `/edit` in your sheet URL | **NEEDED for read features** |
 | `SHEETS_WEBHOOK_SECRET` | (optional) reject unknown callers to the Apps Script | any random string (also set in the script) | optional |
 | `CRON_SECRET` | Protects `/api/complaint/reping` and `/api/reengagement/digest` | any random string | **NEEDED for crons** |
-| `AUTH_SECRET` | Passwordless sign-in (signs magic links + sessions) | any long random string (`openssl rand -base64 48`) | **NEEDED for login** |
+| `AUTH_SECRET` | Signed dashboard sessions | any long random string (`openssl rand -base64 48`) | **NEEDED for login** |
 | `STRIPE_SECRET_KEY` | Stripe Connect (salons link their own Stripe) | Stripe dashboard → API keys (your platform account) | optional, for payments |
 | `STRIPE_CONNECT_CLIENT_ID` | Stripe Connect OAuth | Stripe dashboard → Connect → Settings (`ca_…`) | optional, for payments |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Checkout | Stripe dashboard → API keys (`pk_…`) | optional |
@@ -27,7 +26,9 @@ Environment variables). Most features degrade gracefully if a key is missing.
 | `BRANDFETCH_API_KEY` | Brand-theming demo | [developers.brandfetch.com](https://developers.brandfetch.com) | ✅ you have it |
 | `RESEND_API_KEY` | All email notifications | [resend.com](https://resend.com) | ✅ you have it |
 | `HELP_NOTIFY_EMAIL` | Inbox that receives alerts | your email | ✅ you have it |
-| `NEXT_PUBLIC_APP_URL` | Absolute URLs | your live site URL | set on deploy |
+| `NEXT_PUBLIC_APP_URL` | Absolute URLs, Stripe callbacks, Retell webhook display | your live Vercel URL | set on deploy |
+| `RETELL_API_KEY` | AI phone receptionist / concierge | Retell dashboard | optional, for AI concierge |
+| `RETELL_AGENT_ID` | Retell agent to answer Bare Studios calls | Retell dashboard | optional, for AI concierge |
 
 ---
 
@@ -40,7 +41,7 @@ Environment variables). Most features degrade gracefully if a key is missing.
    ✏️ → New version → Deploy** (same `/exec` URL). Without this, only lead capture works.
 2. **Tabs are created automatically** on first write: `Leads`, `Staff`, `Payroll`,
    `Complaints`, `Inventory`, `Promotions`, `Reviews`, `Clients`, `Waitlist`,
-   `Openings`, `Products`, `Stripe`, and `Wallet`.
+   `Openings`, `Products`, `Stripe`, `Wallet`, and `ConciergeInbox`.
 3. **For the READ features** (reviews hub, complaint re-ping, client re-engagement digest):
    set `SHEETS_SHEET_ID` and share the sheet **"Anyone with the link can view."**
    - ⚠️ **Privacy:** link-view exposes *every* tab (incl. Payroll, Complaints, Clients)
@@ -72,19 +73,15 @@ So each salon's payments settle to *their* Stripe (you never hold their secret k
    ledger is sheet-based (append-only) — fine for a demo, but move the money side to a real
    database (transactions) before real volume. (No Stripe secrets are exposed either way.)
 
-## 2c. Auth (passwordless, on Sheets)
+## 2c. Auth (passwords on Sheets for MVP)
 
-Owners sign in at `/login` — no passwords. We email a 15-minute magic link
-(via Resend), and the session is a signed httpOnly cookie. The `Users` tab holds
-only email / salon / role (no secrets).
+Owners sign in at `/login` with the password created during account setup. Password hashes and business profile rows live in Google Sheets for this MVP. Move auth to a real database before broader rollout.
 
 To enable:
 1. Set `AUTH_SECRET` (any long random string).
 2. `SHEETS_SHEET_ID` + link-view must be on (login looks the user up via gviz).
 3. The Apps Script must be the redeployed version (writes the `Users` tab).
-4. ⚠️ **Email delivery:** with Resend's shared sender, magic links only reach the
-   address that owns your Resend account until you **verify a domain**. Verify a
-   domain in Resend before real salon owners can sign in.
+4. Resend is still used for operational alerts, but password sign-in does not require email magic-link delivery.
 
 ## 3. Scheduled jobs (cron)
 
@@ -96,16 +93,17 @@ Three endpoints should run daily. Easiest free option: [cron-job.org](https://cr
 - `https://YOUR-SITE/api/reengagement/digest` — emails the daily overdue-to-rebook list
 - `https://YOUR-SITE/api/promotion/send` — emails the owner promotions scheduled for today
 
-(Netlify Scheduled Functions also work, but an external pinger is simplest for Next routes.)
+(Vercel Cron Jobs also work, but an external pinger is simplest while testing.)
 
 ---
 
-## 4. Deploy to Netlify
+## 4. Deploy to Vercel
 
-1. Netlify → **Add new site → Import from Git** → pick `Salon_platform_w_Mark`.
-2. Build command `npm run build`; the `@netlify/plugin-nextjs` runtime is in `netlify.toml`.
-3. Add all the env vars from section 1.
-4. After it's live, set `NEXT_PUBLIC_APP_URL` to the real URL and set up the crons (section 3).
+1. Vercel → **Add New Project** → import `tdong1919-dev/BareStudiosOS`.
+2. Framework preset: Next.js. Build command: `npm run build`.
+3. Add all env vars from section 1.
+4. After it is live, set `NEXT_PUBLIC_APP_URL` to the production Vercel URL and set up crons (section 3).
+5. If using Retell, set the Retell webhook URL to `https://YOUR-SITE/api/retell/webhook`.
 
 ---
 
@@ -113,8 +111,11 @@ Three endpoints should run daily. Easiest free option: [cron-job.org](https://cr
 
 | Page | What it does |
 |---|---|
-| `/` | Landing page, ROI calculator, brand-theming demo, demo-request capture |
-| `/login` · `/account` | Passwordless sign-in + the salon's dashboard (session-gated) |
+| `/` | Bare Studios client-facing salon site and booking CTA |
+| `/login` · `/dashboard` | Password sign-in + Bare Studios dashboard (session-gated) |
+| `/assistants` | Five-assistant command center with reports and action links |
+| `/concierge` | AI Concierge inbox for phone calls, chat, SMS, and DMs |
+| `/settings/concierge` | Retell-ready setup page and webhook instructions |
 | `/financials` | Financial agent — commissions, payroll (deterministic), advice |
 | `/inventory` | Flag low stock + AI cheapest-reorder search; tax categories |
 | `/intelligence` | Monthly executive industry/competitor briefing |
@@ -136,7 +137,7 @@ These were in the spec but require external services, approvals, or Mark's booki
 
 | Feature | What it needs |
 |---|---|
-| **Auth + per-salon accounts** | ✅ MVP built — passwordless login (`/login`), signed sessions, salon dashboard (`/account`). Remaining: verify a Resend domain for delivery; wire the existing feature pages to read the salon from the session (instead of `?salon=` params); add roles/staff invites |
+| **Auth + per-salon accounts** | ✅ MVP built — password login (`/login`), signed sessions, dashboard (`/dashboard`), onboarding, team/location settings. Remaining: move auth from Sheets to a real database before wider rollout; add staff invites and role permissions |
 | **Stripe ACH client wallet** (flagship) | ✅ MVP built — Connect onboarding (`/settings/stripe`) + load/pay (`/wallet`) + webhook. Remaining for production: a real database for the money ledger (transactions, no double-spend) and refunds/disputes handling |
 | **Online store** | ✅ MVP built (`/store`) — catalog + Stripe checkout to the salon. Remaining: shipping, inventory sync, order management UI |
 | **Google review auto-responder** + **review aggregation** | **Google Business Profile API** (OAuth app + Google verification/approval) |
@@ -149,3 +150,14 @@ These were in the spec but require external services, approvals, or Mark's booki
 **Recommended next:** the Stripe ACH wallet — it's the headline value prop and the
 one feature that genuinely warrants a real database (Supabase free tier or similar)
 rather than the sheet.
+
+
+## 7. AI Concierge / Retell MVP
+
+- Dashboard inbox: `/concierge`
+- Settings: `/settings/concierge`
+- Website/chat intake endpoint: `/api/concierge/message`
+- Retell call webhook endpoint: `/api/retell/webhook`
+- Google Sheet tab: `ConciergeInbox`
+
+Retell should answer common booking, pricing, barbering, career/rental, and reschedule questions. It should route barbering to Andy at (443) 559-2037, careers/suite/chair rental to Don at (443) 564-0030, and escalation-worthy issues to the owner or manager.

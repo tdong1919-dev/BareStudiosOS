@@ -1,6 +1,6 @@
 /**
  * GET /api/auth/callback?token=… — completes magic-link sign-in. Verifies the
- * token and sets the signed session cookie, then redirects to /account.
+ * token and sets the signed session cookie, then redirects to /dashboard.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMagic, signSession, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/auth";
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${base}/login?error=expired`);
   }
 
-  const res = NextResponse.redirect(`${base}/account`);
+  const res = NextResponse.redirect(`${base}/dashboard`);
   res.cookies.set(SESSION_COOKIE, signSession(session), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

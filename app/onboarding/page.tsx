@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
   if (!session) redirect("/login");
 
   const existing = await getBusinessProfile(session.email, session.salon);
-  if (existing) redirect("/account");
+  if (existing) redirect("/dashboard");
 
   return (
     <PageShell

@@ -39,7 +39,7 @@ export default function LoginForm() {
         setError(json.error || "Something went wrong.");
         return;
       }
-      window.location.href = mode === "create" ? "/onboarding" : "/account";
+      window.location.href = mode === "create" ? "/onboarding" : "/dashboard";
     } catch {
       setError("Network error — please try again.");
     } finally {

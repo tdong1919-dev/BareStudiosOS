@@ -16,10 +16,10 @@ export default async function FinancialsPage() {
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-5">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            JIDOKA <span className="text-text-secondary">Cosmetics OS</span>
+            Bare Studios <span className="text-text-secondary">OS</span>
           </Link>
-          <Link href="/" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-            Back to overview
+          <Link href="/dashboard" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
+            Back to dashboard
           </Link>
         </div>
       </header>

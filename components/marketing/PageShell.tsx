@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** Shared chrome for the JIDOKA feature/assistant pages — wordmark header + titled section. */
+/** Shared chrome for Bare Studios customer and studio pages. */
 export default function PageShell({
   eyebrow,
   title,
@@ -23,10 +23,10 @@ export default function PageShell({
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-5">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            Bare Studios <span className="text-text-secondary">OS</span>
+            Bare Studios
           </Link>
           <Link href="/" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-            Back to overview
+            Back home
           </Link>
         </div>
       </header>
@@ -40,7 +40,7 @@ export default function PageShell({
         {showBottomBack && (
           <div className="mt-10 border-t border-border pt-6">
             <Link href="/" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-              Back to overview
+              Back home
             </Link>
           </div>
         )}

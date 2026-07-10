@@ -4,7 +4,7 @@ import PageShell from "@/components/marketing/PageShell";
 import { BARE_STUDIOS } from "@/lib/bare-studios";
 
 export const metadata: Metadata = {
-  title: "Suite rental application — Bare Studios OS",
+  title: "Studio Suite Rentals — Bare Studios",
 };
 
 export default function SuiteRentalPage() {
@@ -12,7 +12,7 @@ export default function SuiteRentalPage() {
     <PageShell
       eyebrow="Studio suites"
       title="Apply for a Bare Studios suite."
-      intro="Capture renter inquiries directly inside Bare Studios OS so suite leads can be reviewed, assigned, and followed up without a separate form stack."
+      intro="Independent beauty professionals can apply for a private suite inside Bare Studios, a supportive Downtown Bel Air studio community built for collaboration, freedom, and growth."
       note={`${BARE_STUDIOS.address} · ${BARE_STUDIOS.phone}`}
     >
       <SuiteApplicationForm />

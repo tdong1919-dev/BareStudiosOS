@@ -4,8 +4,8 @@ import PageShell from "@/components/marketing/PageShell";
 import { BARE_STUDIOS } from "@/lib/bare-studios";
 
 export const metadata: Metadata = {
-  title: "Book — Bare Studios OS",
-  description: "Bare Studios booking powered by the Bare Studios OS.",
+  title: "Book an Appointment — Bare Studios",
+  description: "Request a Bare Studios service appointment in Downtown Bel Air.",
 };
 
 export default function BookPage() {
@@ -13,7 +13,7 @@ export default function BookPage() {
     <PageShell
       eyebrow="Book Bare Studios"
       title="Request your appointment."
-      intro={`Choose a service at ${BARE_STUDIOS.name}. This booking flow is the first owned replacement for the current external Vagaro handoff.`}
+      intro={`Choose a service at ${BARE_STUDIOS.name}, share your preferred date and time, and the studio will follow up to confirm your visit.`}
       note={`${BARE_STUDIOS.address} · ${BARE_STUDIOS.phone}`}
       wide
     >

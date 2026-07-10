@@ -15,9 +15,9 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  title: "Bare Studios OS — Powered by JIDOKA",
+  title: "Bare Studios | Facials, Lashes, Brows & Skin in Bel Air",
   description:
-    "A client-specific operating system for Bare Studios to replace Vagaro workflows across booking, client retention, payments, inventory, team operations, and assistant-powered reporting.",
+    "Book facials, Dermalogica Luminfusion, microneedling, chemical peels, lashes, brows, waxing, and permanent makeup at Bare Studios in Downtown Bel Air.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

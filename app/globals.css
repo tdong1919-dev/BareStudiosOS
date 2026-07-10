@@ -63,6 +63,43 @@ body {
   background-image: linear-gradient(135deg, #F2ECE3 0%, #E9E2D6 100%);
 }
 
+.salon-image {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.9), transparent 18%),
+    linear-gradient(135deg, #D8C9B8 0%, #F4EEE7 38%, #A98F7A 100%);
+}
+
+.salon-image::before,
+.salon-image::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  opacity: 0.52;
+}
+
+.salon-image::before {
+  top: 14%;
+  left: 10%;
+  width: 52%;
+  height: 62%;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.85), rgba(239, 225, 211, 0.24));
+  transform: rotate(-18deg);
+}
+
+.salon-image::after {
+  right: -10%;
+  bottom: -7%;
+  width: 60%;
+  height: 56%;
+  background: linear-gradient(145deg, rgba(75, 122, 99, 0.24), rgba(255, 255, 255, 0.48));
+}
+
+.salon-image-glow {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.25), transparent 28%, rgba(255,255,255,0.35) 52%, transparent 72%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 1px, transparent 1px 58px);
+}
+
 .assistant-robot-stage {
   perspective: 900px;
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BARE_ARTISTS, BARE_SERVICE_CATEGORIES, BARE_TIME_SLOTS } from "@/lib/bare-studios";
 
 const inputClass =
@@ -23,6 +23,14 @@ export default function BareBookingFlow() {
   const [error, setError] = useState<string | null>(null);
 
   const selectedService = useMemo(() => allServices.find((service) => service.name === serviceName), [serviceName]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const service = params.get("service");
+    if (service && allServices.some((option) => option.name === service)) {
+      setServiceName(service);
+    }
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +61,7 @@ export default function BareBookingFlow() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success/15 text-success text-2xl">✓</div>
         <h2 className="font-serif text-3xl">Request received.</h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-text-secondary">
-          Bare Studios has your appointment request. The receptionist assistant will keep this in the booking queue for confirmation.
+          Bare Studios has your appointment request. The studio will review availability and follow up to confirm your visit.
         </p>
         <button
           type="button"
@@ -127,7 +135,7 @@ export default function BareBookingFlow() {
         <button type="submit" disabled={submitting} className="mt-4 w-full rounded-sm bg-gradient-brand px-6 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white disabled:opacity-50">
           {submitting ? "Saving..." : "Request appointment"}
         </button>
-        <p className="mt-3 text-center text-xs text-text-muted">This replaces the external Vagaro booking handoff with a Bare Studios-owned request queue.</p>
+        <p className="mt-3 text-center text-xs text-text-muted">Appointment requests are reviewed by Bare Studios before confirmation.</p>
       </section>
     </form>
   );

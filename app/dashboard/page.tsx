@@ -1,75 +1,170 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PageShell from "@/components/marketing/PageShell";
 import { requireSession } from "@/lib/auth";
-import { getBusinessProfile } from "@/lib/account-data";
+import { getBusinessProfile, listLocations } from "@/lib/account-data";
 import { readSheetTab } from "@/lib/gviz";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Bare Studios OS",
+  title: "Dashboard - Bare Studios OS",
 };
 
-const assistantLinks = [
-  { href: "/assistants", label: "Assistants hub", note: "All agents, reports, and chats" },
-  { href: "/concierge", label: "AI Concierge inbox", note: "Phone calls, chats, SMS, DMs" },
-  { href: "/financials", label: "Financial Assistant", note: "Payroll, commissions, margin" },
-  { href: "/inventory", label: "Inventory Assistant", note: "Low stock and reorder drafts" },
-  { href: "/reviews", label: "Reviews Assistant", note: "Google, Vagaro, review replies" },
-  { href: "/intelligence", label: "Industry Intelligence", note: "Market trends and one-page execs" },
-  { href: "/clients", label: "Retention Assistant", note: "Lapsed clients and rebooking" },
-  { href: "/wallet?salon=Bare%20Studios", label: "Client wallet", note: "Balances, loads, lower-fee checkout" },
-  { href: "/settings/stripe", label: "Stripe payments", note: "Connect Stripe and wallet billing" },
-  { href: "/settings/concierge", label: "Concierge settings", note: "Retell AI setup and routing" },
-  { href: "/store?salon=Bare%20Studios", label: "Retail store", note: "Product sales and inventory" },
-  { href: "/book", label: "Client booking", note: "Public appointment flow" },
+const nav = [
+  { href: "/dashboard", label: "Calendar", active: true },
+  { href: "/wallet?salon=Bare%20Studios", label: "Checkout" },
+  { href: "/clients", label: "Customers" },
+  { href: "/promotions", label: "Marketing" },
+  { href: "/book", label: "Booking site" },
+  { href: "/assistants", label: "Assistance hub" },
+  { href: "/settings/notifications", label: "Settings" },
 ];
+
+const staff = ["Ciara", "Na", "Andy", "Cindy"];
+const week = ["Mon 6", "Tue 7", "Wed 8", "Thu 9", "Fri 10", "Sat 11", "Sun 12"];
+const times = ["9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM"];
+const appointments = [
+  { day: 1, row: 1, title: "Classic fill", client: "Jasmine R.", staff: "Na", color: "bg-[#d9eadf]" },
+  { day: 2, row: 3, title: "Custom facial", client: "Sandra M.", staff: "Ciara", color: "bg-[#ead9c3]" },
+  { day: 4, row: 5, title: "Barber consult", client: "John B.", staff: "Andy", color: "bg-[#d8e3ef]" },
+  { day: 6, row: 2, title: "Lash lift + tint", client: "Maya L.", staff: "Ciara", color: "bg-[#eadce7]" },
+];
+
+function monthDays() {
+  return [28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1];
+}
 
 export default async function DashboardPage() {
   const session = await requireSession();
   const profile = await getBusinessProfile(session.email, session.salon);
-  const [bookings, concierge, wallet, reviews, inventory] = await Promise.all([
+  const locations = await listLocations(session.email, session.salon);
+  const [bookings, concierge, clients, inventory] = await Promise.all([
     readSheetTab("BookingRequests"),
     readSheetTab("ConciergeInbox"),
-    readSheetTab("Wallet"),
-    readSheetTab("Reviews"),
+    readSheetTab("Clients"),
     readSheetTab("Inventory"),
   ]);
 
+  const businessName = profile?.businessName || session.salon || "Bare Studios";
+  const locationOptions = [profile?.primaryLocation || businessName, ...locations.map((location) => location.location)].filter(Boolean);
+  const uniqueLocations = Array.from(new Set(locationOptions));
   const openBookings = bookings.filter((r) => (r.Status || "requested").toLowerCase() !== "confirmed").length;
   const newConcierge = concierge.filter((r) => (r.Status || "New").toLowerCase() === "new").length;
-  const reviewCount = reviews.length;
-  const lowStock = inventory.length;
 
   return (
-    <PageShell
-      eyebrow="Bare Studios dashboard"
-      title={profile?.businessName || "Bare Studios command center"}
-      intro="Run booking, concierge, assistants, wallet payments, Stripe, reviews, inventory, and team workflows from one place. Google Sheets is the database for this Bare Studios MVP."
-      wide
-    >
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {[
-          [openBookings, "booking requests"],
-          [newConcierge, "new concierge items"],
-          [reviewCount, "reviews tracked"],
-          [wallet.length, "wallet ledger rows"],
-          [lowStock, "inventory flags"],
-        ].map(([value, label]) => (
-          <div key={label} className="rounded-lg border border-border bg-surface p-5">
-            <p className="font-serif text-4xl font-medium">{value}</p>
-            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-text-muted">{label}</p>
-          </div>
-        ))}
-      </div>
+    <main className="min-h-screen bg-[#f7f5f1] text-text-primary">
+      <header className="sticky top-0 z-20 border-b border-[#2f2f2f] bg-[#30302f] text-white">
+        <div className="flex h-14 items-center gap-2 px-4">
+          <Link href="/dashboard" className="mr-2 font-serif text-2xl">B</Link>
+          <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+            {nav.map((item) => (
+              <Link key={item.href} href={item.href} className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ${item.active ? "bg-white/15" : "hover:bg-white/10"}`}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <Link href="/settings/stripe" className="hidden rounded-md bg-white px-3 py-2 text-xs font-medium text-[#30302f] sm:block">Connect Stripe</Link>
+          <div className="hidden max-w-[220px] truncate text-sm md:block">{businessName}</div>
+        </div>
+      </header>
 
-      <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-3">
-        {assistantLinks.map((item) => (
-          <Link key={item.href} href={item.href} className="bg-surface p-5 transition-colors hover:bg-surface-elevated">
-            <p className="font-serif text-xl font-medium">{item.label}</p>
-            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{item.note}</p>
-          </Link>
-        ))}
+      <section className="border-b border-border bg-white px-5 py-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Location</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <select className="rounded-md border border-border bg-white px-3 py-2 text-sm font-medium" defaultValue={uniqueLocations[0]} aria-label="Select location">
+                {uniqueLocations.map((location) => <option key={location}>{location}</option>)}
+              </select>
+              <span className="text-sm text-text-secondary">Single-location today. Multi-location selection is ready as Bare Studios grows.</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/book" className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium">Request appointment</Link>
+            <Link href="/wallet?salon=Bare%20Studios" className="rounded-md bg-[#171717] px-4 py-2 text-sm font-medium text-white">Checkout</Link>
+            <Link href="/clients" className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium">Add customer</Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid min-h-[calc(100vh-112px)] lg:grid-cols-[260px_1fr]">
+        <aside className="border-r border-border bg-[#fbfaf7] p-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold">Calendar</h1>
+            <span className="rounded-full bg-[#30302f] px-2 py-1 text-xs text-white">Today</span>
+          </div>
+
+          <div className="mt-5 rounded-lg border border-border bg-white p-4">
+            <div className="mb-3 flex items-center justify-between text-sm font-medium"><span>July 2026</span><span>‹ ›</span></div>
+            <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-text-muted">
+              {["S", "M", "T", "W", "TH", "F", "S"].map((d) => <span key={d}>{d}</span>)}
+              {monthDays().map((day, i) => <span key={`${day}-${i}`} className={`rounded-full py-1 ${day === 10 ? "bg-[#30302f] text-white" : i < 3 || i > 33 ? "text-text-muted/50" : ""}`}>{day}</span>)}
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-lg border border-border bg-white p-4">
+            <p className="mb-3 text-[11px] uppercase tracking-[0.14em] text-text-muted">Calendars</p>
+            <div className="space-y-3 text-sm">
+              {staff.map((person, i) => (
+                <label key={person} className="flex items-center gap-2"><input type="checkbox" defaultChecked={i < 2} /> {person}</label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-2 text-sm">
+            <Link href="/assistants" className="rounded-md border border-border bg-white p-3"><strong>Assistance hub</strong><br /><span className="text-text-secondary">Reports, chats, assistant actions</span></Link>
+            <Link href="/concierge" className="rounded-md border border-border bg-white p-3"><strong>Inbox</strong><br /><span className="text-text-secondary">{newConcierge} new concierge items</span></Link>
+            <Link href="/settings/notifications" className="rounded-md border border-border bg-white p-3"><strong>Notifications</strong><br /><span className="text-text-secondary">Customer and team routing</span></Link>
+          </div>
+        </aside>
+
+        <section className="overflow-hidden bg-white">
+          <div className="flex flex-col gap-3 border-b border-border px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <button className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white">Today</button>
+              <button className="rounded-md border border-border px-3 py-2 text-sm">‹</button>
+              <button className="rounded-md border border-border px-3 py-2 text-sm">›</button>
+              <h2 className="text-lg font-semibold">Jul 6, 2026 - Jul 12, 2026</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/clients" className="rounded-md border border-border px-4 py-2 text-sm">Customers: {clients.length}</Link>
+              <Link href="/dashboard" className="rounded-md border border-border px-4 py-2 text-sm">Week</Link>
+              <Link href="/book" className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white">Add appointment</Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 border-b border-border bg-[#fbfaf7] text-sm md:grid-cols-4">
+            <div className="border-r border-border p-3"><strong>{openBookings}</strong><span className="ml-2 text-text-secondary">booking requests</span></div>
+            <div className="border-r border-border p-3"><strong>{newConcierge}</strong><span className="ml-2 text-text-secondary">inbox alerts</span></div>
+            <div className="border-r border-border p-3"><strong>{inventory.length}</strong><span className="ml-2 text-text-secondary">inventory flags</span></div>
+            <div className="p-3"><strong>Stripe</strong><span className="ml-2 text-text-secondary">ready to connect</span></div>
+          </div>
+
+          <div className="overflow-auto">
+            <div className="min-w-[980px]">
+              <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border bg-white text-center text-sm font-medium">
+                <div className="border-r border-border p-3" />
+                {week.map((day) => <div key={day} className="border-r border-border p-3 last:border-r-0">{day}</div>)}
+              </div>
+              <div className="relative grid grid-cols-[72px_repeat(7,1fr)]">
+                <div className="bg-[#fbfaf7]">
+                  {times.map((time) => <div key={time} className="h-20 border-b border-r border-border p-2 text-right text-xs font-medium text-text-secondary">{time}</div>)}
+                </div>
+                {week.map((day) => <div key={day} className="border-r border-border last:border-r-0">{times.map((time) => <div key={time} className="h-20 border-b border-border bg-white" />)}</div>)}
+                {appointments.map((appt) => (
+                  <div
+                    key={`${appt.day}-${appt.row}-${appt.client}`}
+                    className={`absolute rounded-md border border-black/10 p-2 text-xs shadow-sm ${appt.color}`}
+                    style={{ left: `calc(72px + ((100% - 72px) / 7) * ${appt.day} + 8px)`, top: `${appt.row * 80 + 12}px`, width: "calc((100% - 72px) / 7 - 16px)", height: "64px" }}
+                  >
+                    <p className="font-semibold">{appt.title}</p>
+                    <p>{appt.client}</p>
+                    <p className="text-text-secondary">{appt.staff}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </PageShell>
+    </main>
   );
 }

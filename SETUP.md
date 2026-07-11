@@ -7,7 +7,7 @@ working," plus the bigger features that still need real integrations.
 
 ## 1. Environment variables
 
-Set these in `.env.local` (local) **and** in your Vercel project (Project Settings → Environment Variables). Most features degrade gracefully if a key is missing.
+Set these in `.env.local` (local) **and** in your Netlify site (Site configuration → Environment variables). Most features degrade gracefully if a key is missing.
 
 | Variable | Powers | Where to get it | Status |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Set these in `.env.local` (local) **and** in your Vercel project (Project Settin
 | `BRANDFETCH_API_KEY` | Brand-theming demo | [developers.brandfetch.com](https://developers.brandfetch.com) | ✅ you have it |
 | `RESEND_API_KEY` | All email notifications | [resend.com](https://resend.com) | ✅ you have it |
 | `HELP_NOTIFY_EMAIL` | Inbox that receives alerts | your email | ✅ you have it |
-| `NEXT_PUBLIC_APP_URL` | Absolute URLs, Stripe callbacks, Retell webhook display | your live Vercel URL | set on deploy |
+| `NEXT_PUBLIC_APP_URL` | Absolute URLs, Stripe callbacks, Retell webhook display | your live Netlify URL | set on deploy |
 | `RETELL_API_KEY` | AI phone receptionist / concierge | Retell dashboard | optional, for AI concierge |
 | `RETELL_AGENT_ID` | Retell agent to answer Bare Studios calls | Retell dashboard | optional, for AI concierge |
 
@@ -93,16 +93,16 @@ Three endpoints should run daily. Easiest free option: [cron-job.org](https://cr
 - `https://YOUR-SITE/api/reengagement/digest` — emails the daily overdue-to-rebook list
 - `https://YOUR-SITE/api/promotion/send` — emails the owner promotions scheduled for today
 
-(Vercel Cron Jobs also work, but an external pinger is simplest while testing.)
+(Netlify Scheduled Functions can also work, but an external pinger is simplest while testing.)
 
 ---
 
-## 4. Deploy to Vercel
+## 4. Deploy to Netlify
 
-1. Vercel → **Add New Project** → import `tdong1919-dev/BareStudiosOS`.
-2. Framework preset: Next.js. Build command: `npm run build`.
+1. Netlify → **Add new site** → import `tdong1919-dev/BareStudiosOS`.
+2. Build command: `npm run build`. The repo includes `netlify.toml` for the Next.js runtime.
 3. Add all env vars from section 1.
-4. After it is live, set `NEXT_PUBLIC_APP_URL` to the production Vercel URL and set up crons (section 3).
+4. After it is live, set `NEXT_PUBLIC_APP_URL` to the production Netlify URL and set up crons (section 3).
 5. If using Retell, set the Retell webhook URL to `https://YOUR-SITE/api/retell/webhook`.
 
 ---

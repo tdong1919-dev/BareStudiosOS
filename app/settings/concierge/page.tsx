@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Concierge Settings — Bare Studios 
 export default async function ConciergeSettingsPage() {
   await requireSession();
   const configured = conciergeConfigured();
-  const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://your-vercel-domain.com"}/api/retell/webhook`;
+  const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://your-netlify-site.netlify.app"}/api/retell/webhook`;
 
   return (
     <PageShell
@@ -22,7 +22,7 @@ export default async function ConciergeSettingsPage() {
           <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Connection status</p>
           <p className="mt-3 font-serif text-3xl font-medium">{configured ? "Retell env ready" : "Retell setup needed"}</p>
           <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-            Add RETELL_API_KEY and RETELL_AGENT_ID in Vercel when the Retell account is ready. Point Retell call events to the webhook below so every call summary lands in ConciergeInbox.
+            Add RETELL_API_KEY and RETELL_AGENT_ID in Netlify when the Retell account is ready. Point Retell call events to the webhook below so every call summary lands in ConciergeInbox.
           </p>
           <div className="mt-5 rounded-md border border-border bg-surface-elevated p-4">
             <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted">Webhook URL</p>

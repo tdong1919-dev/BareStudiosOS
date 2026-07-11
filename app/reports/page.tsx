@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageShell from "@/components/marketing/PageShell";
+import FinancialReportImporter from "@/components/reports/FinancialReportImporter";
 import { requireSession } from "@/lib/auth";
+import { readSheetTab } from "@/lib/gviz";
 
 export const metadata: Metadata = { title: "Reports - Bare Studios OS" };
 
@@ -24,12 +26,19 @@ function csvHref(rows: string[][]) {
 
 export default async function ReportsPage() {
   await requireSession();
+  const importedFinancialRows = await readSheetTab("FinancialReports").catch(() => []);
   const allRows = [["Category", "Report", "Status"], ...groups.flatMap(([title, items]) => (items as string[]).map((item) => [title as string, item, "Demo data ready"]))];
   return (
     <PageShell eyebrow="Reports" title="Reports dashboard." intro="A single place for sales, employees, customers, appointments, inventory, messaging, and payroll reports. Agents use this report layer for more accurate recommendations and actions." wide>
-      <a href={csvHref(allRows)} download="bare-studios-all-reports.csv" className="mb-5 inline-flex rounded-md bg-gradient-brand px-4 py-2 text-sm font-medium text-white">
-        Download all reports CSV
-      </a>
+      <FinancialReportImporter />
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <a href={csvHref(allRows)} download="bare-studios-all-reports.csv" className="inline-flex rounded-md bg-gradient-brand px-4 py-2 text-sm font-medium text-white">
+          Download all reports CSV
+        </a>
+        <span className="rounded-md border border-border bg-white px-4 py-2 text-sm text-text-secondary">
+          {importedFinancialRows.length} imported financial row{importedFinancialRows.length === 1 ? "" : "s"}
+        </span>
+      </div>
       <div className="grid gap-5 lg:grid-cols-2">
         {groups.map(([title, items]) => (
           <section key={title as string} className="rounded-xl border border-border bg-surface p-6">

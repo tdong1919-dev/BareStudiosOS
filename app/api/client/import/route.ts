@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { appendSheetRow } from "@/lib/sheets";
 
 const HEADERS = ["Added", "Salon", "Name", "Email", "Phone", "Last visit", "Service", "Interval days"];
-const MAX_IMPORT_ROWS = 250;
+const MAX_IMPORT_ROWS = 25;
 
 type ImportClient = {
   name?: string;
@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
   const rows = Array.isArray(body.rows) ? (body.rows as ImportClient[]) : [];
 
   if (rows.length === 0) {
-    return NextResponse.json({ error: "No client rows were found in that CSV." }, { status: 400 });
+    return NextResponse.json({ error: "No client rows were found in that file." }, { status: 400 });
   }
 
   if (rows.length > MAX_IMPORT_ROWS) {
     return NextResponse.json(
-      { error: `This importer supports ${MAX_IMPORT_ROWS} clients at a time. Split the CSV into smaller batches.` },
+      { error: `This importer saves ${MAX_IMPORT_ROWS} clients at a time. Please retry the import.` },
       { status: 400 },
     );
   }
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     if (!saved.ok) {
-      lastError = saved.error || "Google Sheets could not save the import.";
+      lastError = saved.error || `Google Sheets could not save ${name || email || phone}.`;
       break;
     }
 

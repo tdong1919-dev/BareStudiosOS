@@ -14,7 +14,7 @@ type ParsedClient = {
 
 const defaultButtonClass =
   "rounded-sm border border-border bg-surface-elevated px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-linen";
-const IMPORT_BATCH_SIZE = 100;
+const IMPORT_BATCH_SIZE = 5;
 
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
@@ -165,21 +165,28 @@ export default function ClientCsvImporter({
 
       let imported = 0;
       let skipped = 0;
+      const largeImportNote = clients.length > 250 ? " This large Vagaro file may take a few minutes." : "";
 
       for (let index = 0; index < clients.length; index += IMPORT_BATCH_SIZE) {
         const batch = clients.slice(index, index + IMPORT_BATCH_SIZE);
-        setStatus(`Importing ${Math.min(index + batch.length, clients.length)} of ${clients.length} clients...`);
+        setStatus(`Importing ${Math.min(index + batch.length, clients.length)} of ${clients.length} clients...${largeImportNote}`);
 
         const res = await fetch("/api/client/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ rows: batch }),
         });
-        const json = await res.json().catch(() => ({}));
+        const responseText = await res.text();
+        let json: Record<string, string | number | boolean | undefined> = {};
+        try {
+          json = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          json = {};
+        }
 
         if (!res.ok) {
           setStatus(imported ? `Imported ${imported} before the import stopped.` : "");
-          setError(json.error || "The file could not be imported.");
+          setError(String(json.error || responseText || `The file could not be imported. Server returned ${res.status}.`));
           return;
         }
 
@@ -188,7 +195,7 @@ export default function ClientCsvImporter({
 
         if (json.error) {
           setStatus(`Imported ${imported} before the import stopped.`);
-          setError(json.error);
+          setError(String(json.error));
           return;
         }
       }

@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
   if (!existingUser) {
     const userSaved = await appendSheetRow("Users", USER_HEADERS, [new Date().toISOString(), email, salon, role, "active"]);
     if (!userSaved.ok) {
-      return NextResponse.json({ error: userSaved.error === "SHEETS_WEBHOOK_URL not set" ? "Netlify is missing SHEETS_WEBHOOK_URL. Add the Google Apps Script /exec URL in Netlify environment variables." : "Couldn't create the account. Check the account database is connected." }, { status: 502 });
+      return NextResponse.json({ error: userSaved.error || "Couldn't create the account. Check the account database is connected." }, { status: 502 });
     }
   }
 
   const credentialSaved = await appendCredential(email, hashPassword(password));
   if (!credentialSaved.ok) {
-    return NextResponse.json({ error: credentialSaved.error === "SHEETS_WEBHOOK_URL not set" ? "Netlify is missing SHEETS_WEBHOOK_URL. Add the Google Apps Script /exec URL in Netlify environment variables." : "Couldn't save the password. Check the account database is connected." }, { status: 502 });
+    return NextResponse.json({ error: credentialSaved.error || "Couldn't save the password. Check the account database is connected." }, { status: 502 });
   }
 
   const res = NextResponse.json({ ok: true });

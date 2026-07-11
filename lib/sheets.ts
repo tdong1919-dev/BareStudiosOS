@@ -25,7 +25,17 @@ export async function appendSheetRow(
       redirect: "manual",
     });
     const ok = res.status === 0 || (res.status >= 200 && res.status < 400);
-    return ok ? { ok: true } : { ok: false, error: `Sheet ${res.status}` };
+    if (ok) return { ok: true };
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        ok: false,
+        error:
+          "Google Apps Script denied access. In Apps Script, deploy the Web App with 'Who has access: Anyone'.",
+      };
+    }
+
+    return { ok: false, error: `Google Sheets webhook returned ${res.status}` };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "sheet error" };
   }

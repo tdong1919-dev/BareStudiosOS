@@ -19,7 +19,18 @@
  *        SHEETS_SHEET_ID
  */
 
-function doGet() {
+function doGet(e) {
+  var tab = e && e.parameter && e.parameter.tab ? cleanName_(e.parameter.tab) : '';
+  if (tab) {
+    verifySecret_({ secret: e && e.parameter ? e.parameter.secret : '' });
+    return json_({
+      ok: true,
+      tab: tab,
+      rows: readRows_(tab),
+      time: new Date().toISOString()
+    });
+  }
+
   return json_({
     ok: true,
     app: 'Bare Studios OS Sheets Webhook',
@@ -192,6 +203,31 @@ function appendMappedRows_(sheet, headers, rows) {
 
   sheet.getRange(sheet.getLastRow() + 1, 1, values.length, currentHeaders.length).setValues(values);
   return values.length;
+}
+
+function readRows_(tab) {
+  var ss = getSpreadsheet_();
+  var sheet = ss.getSheetByName(tab);
+  if (!sheet || sheet.getLastRow() < 2 || sheet.getLastColumn() < 1) return [];
+
+  var values = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+  var headers = values[0].map(function (value) {
+    return String(value || '').trim();
+  });
+
+  return values.slice(1).map(function (row) {
+    var obj = {};
+    headers.forEach(function (header, index) {
+      if (!header) return;
+      var value = row[index];
+      if (Object.prototype.toString.call(value) === '[object Date]') {
+        obj[header] = value.toISOString();
+      } else {
+        obj[header] = value == null ? '' : String(value);
+      }
+    });
+    return obj;
+  });
 }
 
 function formatHeader_(sheet, width) {

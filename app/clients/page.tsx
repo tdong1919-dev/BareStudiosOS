@@ -29,6 +29,7 @@ export default async function ClientsPage() {
   const allRows = await readSheetTab("Clients");
   const savedRows = allRows.filter((r) => (r.Salon || "").trim().toLowerCase() === session.salon.trim().toLowerCase());
   const rows = savedRows.length > 0 ? savedRows : sampleClients;
+  const usingSampleClients = savedRows.length === 0;
   const due = overdueClients(rows);
 
   return (
@@ -44,6 +45,12 @@ export default async function ClientsPage() {
         <Link href="/settings/stripe" className={actionButtonClass}>Stripe card settings</Link>
         <Link href="/settings/notifications" className={actionButtonClass}>Notification settings</Link>
       </div>
+
+      {usingSampleClients && (
+        <p className="mb-6 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+          Live client rows are not loading yet. If you just imported clients, redeploy the latest Google Apps Script from <code>docs/sheets-webhook.gs</code> so the app can read the Clients tab through the same database connection it writes to.
+        </p>
+      )}
 
       <section className="mb-8">
         <div className="grid gap-3 sm:grid-cols-3">

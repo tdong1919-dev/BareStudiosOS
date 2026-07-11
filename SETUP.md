@@ -35,7 +35,7 @@ Set these in `.env.local` (local) **and** in your Netlify site (Site configurati
 ## 2. Google Sheet — one-time
 
 1. **Apps Script deployment is ready.** Use this `/exec` URL for Netlify: `https://script.google.com/macros/s/AKfycbxYjelNMORd6t8AUeAqy-j5xb97Gf2Mza0CTvl5-_JG_n0I7_kHlitqhsCxOn5VzxvR6Q/exec`. The script in `docs/sheets-webhook.gs` was updated
-   to support structured tab writes (`{ tab, headers, row }`) used by the financial,
+   to support structured tab writes (`{ tab, headers, row }`) and tab reads (`?tab=Clients`) used by the financial,
    inventory, promotions, reviews, and client features. In the Apps Script editor:
    paste the latest `docs/sheets-webhook.gs`, then **Deploy → Manage deployments →
    ✏️ → New version → Deploy** (same `/exec` URL). Without this, only lead capture works.

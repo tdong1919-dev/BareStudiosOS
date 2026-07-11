@@ -7,6 +7,8 @@
  * view". If unset or the fetch fails, returns []. The first row is treated as
  * headers; each subsequent row becomes an object keyed by header.
  */
+import { getSheetsWebhookUrl } from "@/lib/sheets";
+
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -46,7 +48,34 @@ function parseCsv(text: string): string[][] {
   return rows;
 }
 
-export async function readSheetTab(tab: string): Promise<Record<string, string>[]> {
+async function readViaWebhook(tab: string): Promise<Record<string, string>[]> {
+  const webhookUrl = getSheetsWebhookUrl();
+  if (!webhookUrl) return [];
+
+  const url = new URL(webhookUrl);
+  url.searchParams.set("tab", tab);
+  if (process.env.SHEETS_WEBHOOK_SECRET) {
+    url.searchParams.set("secret", process.env.SHEETS_WEBHOOK_SECRET);
+  }
+
+  try {
+    const res = await fetch(url.toString(), { redirect: "follow", cache: "no-store" });
+    if (!res.ok) return [];
+    const json = await res.json().catch(() => null) as { ok?: boolean; rows?: Record<string, string>[] } | null;
+    if (!json?.ok || !Array.isArray(json.rows)) return [];
+    return json.rows.map((row) => {
+      const out: Record<string, string> = {};
+      Object.entries(row).forEach(([key, value]) => {
+        out[key] = value == null ? "" : String(value).trim();
+      });
+      return out;
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function readViaGviz(tab: string): Promise<Record<string, string>[]> {
   const id = process.env.SHEETS_SHEET_ID;
   if (!id) return [];
   const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
@@ -69,4 +98,10 @@ export async function readSheetTab(tab: string): Promise<Record<string, string>[
   } catch {
     return [];
   }
+}
+
+export async function readSheetTab(tab: string): Promise<Record<string, string>[]> {
+  const webhookRows = await readViaWebhook(tab);
+  if (webhookRows.length > 0) return webhookRows;
+  return readViaGviz(tab);
 }

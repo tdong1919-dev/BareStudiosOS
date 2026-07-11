@@ -312,6 +312,28 @@ export default function WalletPanel({
 
       <div className="rounded-xl border border-border bg-surface p-6 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">Promotions at checkout</p>
+          <a href="/promotions" className="text-[12px] uppercase tracking-[0.12em] text-text-secondary hover:text-text-primary">Manage promotions</a>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[
+            ["Win-back", "$25 off next visit", "Apply to overdue returning client"],
+            ["Review gift", "Free gift after honest review", "Attach to today's checkout"],
+            ["Retail attach", "10% off lash cleanser", "Use with lash services"],
+            ["Birthday", "20% birthday month", "Eligible this month"],
+          ].map(([name, offer, rule]) => (
+            <button key={name} type="button" onClick={() => setRetailInfo(`${name} promotion applied: ${offer}.`)} className="rounded-md border border-border bg-white p-3 text-left text-sm hover:bg-surface-elevated">
+              <span className="block font-medium">{name}</span>
+              <span className="mt-1 block text-text-secondary">{offer}</span>
+              <span className="mt-1 block text-xs text-text-muted">{rule}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+
+      <div className="rounded-xl border border-border bg-surface p-6 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">Retail checkout</p>
           <a href={`/store?salon=${encodeURIComponent(businessName)}`} className="text-[12px] uppercase tracking-[0.12em] text-text-secondary hover:text-text-primary">Manage retail</a>
         </div>

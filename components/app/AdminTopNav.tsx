@@ -7,9 +7,9 @@ const nav = [
   { href: "/clients", label: "Customers" },
   { href: "/store?salon=Bare%20Studios", label: "Retail" },
   { href: "/promotions", label: "Marketing" },
-  { href: "/book", label: "Booking site" },
   { href: "/assistants", label: "Assistance hub" },
-  { href: "/settings/notifications", label: "Settings" },
+  { href: "/settings/team", label: "Settings" },
+  { href: "/book", label: "Booking site" },
 ];
 
 export default function AdminTopNav({ session, active = "" }: { session: Session; active?: string }) {

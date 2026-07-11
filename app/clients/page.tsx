@@ -19,6 +19,19 @@ const sampleClients: Record<string, string>[] = [
   { Name: "John Brooks", Email: "john@example.com", Phone: "(443) 555-0199", "Last visit": "2026-03-10", Service: "Barbering", "Interval days": "30", Spent: "$410", SMS: "off", EmailOptIn: "on" },
 ];
 
+
+const reminderRules = [
+  { match: ["lash", "fill", "extension"], text: "Recommend lash cleanser today and pre-book the next fill before they leave." },
+  { match: ["facial", "skin", "dermaplaning", "peel"], text: "Check skin goals, recommend SPF or serum, and schedule the next facial window." },
+  { match: ["barber", "hair", "cut"], text: "Ask about product needs and offer the next maintenance cut before checkout." },
+  { match: ["brow", "wax", "lamination"], text: "Confirm preferred shape notes and suggest a 4-6 week touch-up." },
+];
+
+function reminderFor(service: string) {
+  const normalized = service.toLowerCase();
+  return reminderRules.find((rule) => rule.match.some((word) => normalized.includes(word)))?.text || "Review service history and recommend the next best booking before checkout.";
+}
+
 function money(row: Record<string, string>, index: number) {
   return row.Spent || row["Total Spent"] || row["Lifetime Spend"] || sampleClients[index % sampleClients.length].Spent;
 }
@@ -35,29 +48,20 @@ export default async function ClientsPage() {
       eyebrow="Customers"
       title="Client profiles."
       intro="Import customers from Vagaro or another platform, review each profile, and give the team the reminders they need before checkout or rebooking."
-      note="CSV import is staged for the Google Sheets MVP. The next production step is mapping uploaded columns into the Clients tab automatically."
+      note="Batch CSV import is staged for the Google Sheets MVP. Recommendation mapping is controlled from Settings."
       wide
     >
       <div className="mb-6 flex flex-wrap gap-3">
         <Link href="/dashboard" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Back to calendar</Link>
-        <Link href="/settings/notifications" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Notification settings</Link>
+        <label className="cursor-pointer rounded-sm bg-gradient-brand px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-white">
+          Batch Import CSV
+          <input type="file" accept=".csv" className="sr-only" aria-label="Batch import customer CSV" />
+        </label>
         <Link href="/settings/stripe" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Stripe card settings</Link>
+        <Link href="/settings/notifications" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Notification settings</Link>
       </div>
 
-      <section className="mb-8 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Import customers</p>
-          <p className="mt-3 font-serif text-2xl font-medium">Upload CSV from Vagaro</p>
-          <p className="mt-3 text-sm leading-relaxed text-text-secondary">
-            Export customers, appointment history, notes, tags, birthdays, opt-ins, and spend from the old platform, then import here during migration.
-          </p>
-          <div className="mt-5 rounded-md border border-dashed border-border bg-white p-5">
-            <input type="file" accept=".csv" className="w-full text-sm" aria-label="Upload customer CSV" />
-            <p className="mt-3 text-xs text-text-muted">Accepted columns: name, email, phone, last visit, service, spend, SMS opt-in, email opt-in, notes.</p>
-          </div>
-          <button className="mt-4 rounded-sm bg-gradient-brand px-6 py-3 text-[12px] uppercase tracking-[0.14em] text-white">Preview import mapping</button>
-        </div>
-
+      <section className="mb-8">
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-border bg-surface p-5"><p className="font-serif text-4xl">{rows.length}</p><p className="text-xs uppercase tracking-[0.14em] text-text-muted">clients</p></div>
           <div className="rounded-xl border border-border bg-surface p-5"><p className="font-serif text-4xl">{due.length}</p><p className="text-xs uppercase tracking-[0.14em] text-text-muted">due to rebook</p></div>
@@ -96,7 +100,7 @@ export default async function ClientsPage() {
 
               <div className="mt-5 rounded-md border border-border bg-surface-elevated p-4 text-sm leading-relaxed text-text-secondary">
                 <p className="font-medium text-text-primary">Reminder</p>
-                <p className="mt-1">Recommend a follow-up based on {client.Service || "last service"}; adjust automation rules in notification settings.</p>
+                <p className="mt-1">{reminderFor(client.Service || "")}</p>
               </div>
             </article>
           ))}

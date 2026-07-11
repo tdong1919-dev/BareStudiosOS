@@ -67,6 +67,22 @@ export default async function TeamSettingsPage({
       </div>
 
       <section className="mt-8 rounded-xl border border-border bg-surface p-6">
+        <h2 className="font-serif text-2xl">Business profile</h2>
+        <p className="mt-2 text-sm text-text-secondary">Update the location details team members and customers see. Changes are staged here for the Google Sheets MVP.</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <input className={inputClass} defaultValue={profile?.businessName || session.salon} aria-label="Business name" />
+          <input className={inputClass} defaultValue={profile?.phone || ""} placeholder="Business phone" aria-label="Business phone" />
+          <input className={`${inputClass} sm:col-span-2`} defaultValue={profile?.address || ""} placeholder="Business address" aria-label="Business address" />
+          <input className={inputClass} defaultValue="Mon-Sat 9 AM-7 PM" placeholder="Business hours" aria-label="Business hours" />
+          <select className={inputClass} defaultValue="Owner approval required" aria-label="Access policy">
+            <option>Owner approval required</option>
+            <option>Managers can invite team</option>
+            <option>Owners only</option>
+          </select>
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-xl border border-border bg-surface p-6">
         <h2 className="font-serif text-2xl">Add a team member</h2>
         <p className="mt-2 text-sm text-text-secondary">
           {members.length < seatLimit

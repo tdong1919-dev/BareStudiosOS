@@ -84,6 +84,25 @@ export default async function NotificationSettingsPage() {
         </section>
       </div>
 
+
+      <section className="mt-6 rounded-xl border border-border bg-surface p-6">
+        <p className="font-serif text-2xl font-medium">Client recommendation mapping</p>
+        <p className="mt-2 text-sm text-text-secondary">These rules decide what appears inside each client profile based on the service they receive.</p>
+        <div className="mt-5 overflow-hidden rounded-lg border border-border">
+          {[
+            ["Lashes / fills / extensions", "Recommend lash cleanser today and pre-book the next fill before they leave."],
+            ["Facials / skin / dermaplaning / peel", "Check skin goals, recommend SPF or serum, and schedule the next facial window."],
+            ["Barbering / haircuts", "Ask about product needs and offer the next maintenance cut before checkout."],
+            ["Brows / waxing / lamination", "Confirm preferred shape notes and suggest a 4-6 week touch-up."],
+          ].map(([service, recommendation], i) => (
+            <div key={service} className={`grid gap-3 bg-white p-4 text-sm md:grid-cols-[0.8fr_1.2fr] ${i > 0 ? "border-t border-border" : ""}`}>
+              <input className="rounded-md border border-border px-3 py-2" defaultValue={service} aria-label={`${service} service keywords`} />
+              <input className="rounded-md border border-border px-3 py-2" defaultValue={recommendation} aria-label={`${service} recommendation`} />
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="mt-6 rounded-xl border border-border bg-surface-elevated p-6">
         <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
           <div>

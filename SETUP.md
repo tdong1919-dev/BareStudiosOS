@@ -16,7 +16,7 @@ Set these in `.env.local` (local) **and** in your Vercel project (Project Settin
 | `SHEETS_SHEET_ID` | Sheet **reads** (reviews hub, complaint re-ping, client re-engagement) | the long string between `/d/` and `/edit` in your sheet URL | **NEEDED for read features** |
 | `SHEETS_WEBHOOK_SECRET` | (optional) reject unknown callers to the Apps Script | any random string (also set in the script) | optional |
 | `CRON_SECRET` | Protects `/api/complaint/reping` and `/api/reengagement/digest` | any random string | **NEEDED for crons** |
-| `AUTH_SECRET` | Signed dashboard sessions | any long random string (`openssl rand -base64 48`) | **NEEDED for login** |
+| `AUTH_SECRET` | Signed dashboard sessions | any long random string (`openssl rand -base64 48`) | **REQUIRED before production** |
 | `STRIPE_SECRET_KEY` | Stripe Connect (salons link their own Stripe) | Stripe dashboard → API keys (your platform account) | optional, for payments |
 | `STRIPE_CONNECT_CLIENT_ID` | Stripe Connect OAuth | Stripe dashboard → Connect → Settings (`ca_…`) | optional, for payments |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Checkout | Stripe dashboard → API keys (`pk_…`) | optional |
@@ -78,7 +78,7 @@ So each salon's payments settle to *their* Stripe (you never hold their secret k
 Owners sign in at `/login` with the password created during account setup. Password hashes and business profile rows live in Google Sheets for this MVP. Move auth to a real database before broader rollout.
 
 To enable:
-1. Set `AUTH_SECRET` (any long random string).
+1. Set `AUTH_SECRET` (any long random string) before production. Preview/dev can sign in with the fallback, but production should not rely on it.
 2. `SHEETS_SHEET_ID` + link-view must be on (login looks the user up via gviz).
 3. The Apps Script must be the redeployed version (writes the `Users` tab).
 4. Resend is still used for operational alerts, but password sign-in does not require email magic-link delivery.

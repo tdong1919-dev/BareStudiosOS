@@ -11,17 +11,6 @@ const nav = [
   { href: "/settings/team", label: "Settings" },
 ];
 
-const more = [
-  { href: "/forms", label: "Forms/SOAPs" },
-  { href: "/billing", label: "Invoices, refunds, IOUs" },
-  { href: "/growth", label: "Gift cards & memberships" },
-  { href: "/imports", label: "Import & cleanup" },
-  { href: "/settings/services", label: "Service menu" },
-  { href: "/messaging", label: "Messaging/billing" },
-  { href: "/payroll", label: "Payroll/time card" },
-  { href: "/assistants", label: "Assistance hub" },
-];
-
 export default function AdminTopNav({ session, active = "" }: { session: Session; active?: string }) {
   return (
     <header className="sticky top-0 z-30 border-b border-[#2f2f2f] bg-[#30302f] text-white">
@@ -36,12 +25,6 @@ export default function AdminTopNav({ session, active = "" }: { session: Session
               </Link>
             );
           })}
-          <details className="group relative shrink-0">
-            <summary className="cursor-pointer list-none whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium hover:bg-white/10">More</summary>
-            <div className="absolute right-0 top-11 z-40 w-64 overflow-hidden rounded-lg border border-black/10 bg-white py-2 text-[#30302f] shadow-xl">
-              {more.map((item) => <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm hover:bg-black/[0.04]">{item.label}</Link>)}
-            </div>
-          </details>
           <Link href="/book" className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ${active.toLowerCase().startsWith("booking") ? "bg-white/15" : "hover:bg-white/10"}`}>
             Booking site
           </Link>

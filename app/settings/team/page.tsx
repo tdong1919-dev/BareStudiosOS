@@ -82,7 +82,35 @@ export default async function TeamSettingsPage({
               <option>Manager</option>
               <option>Team member</option>
             </select>
+            <select className={inputClass} name="accessLevel" aria-label="Access level" defaultValue="Team member">
+              <option>Owner</option>
+              <option>Manager</option>
+              <option>Provider</option>
+              <option>Front desk</option>
+              <option>Team member</option>
+            </select>
             <input className={inputClass} name="location" defaultValue={primaryLocation} aria-label="Location" />
+            <input className={inputClass} name="services" placeholder="Services provided" aria-label="Services provided" />
+            <input className={inputClass} name="availableHours" placeholder="Available hours, e.g. Sun 9-7" aria-label="Available hours" />
+            <input className={inputClass} name="requestedTimeOff" placeholder="Requested time off" aria-label="Requested time off" />
+            <input className={inputClass} name="totalHoursWorked" placeholder="Total hours worked" aria-label="Total hours worked" />
+            <input className={inputClass} name="totalRevenue" placeholder="Total revenue" aria-label="Total revenue" />
+            <select className={inputClass} name="compensationType" aria-label="Compensation type" defaultValue="Commission">
+              <option>Hourly</option>
+              <option>Salary</option>
+              <option>Commission</option>
+              <option>Hourly + commission</option>
+              <option>Salary + commission</option>
+            </select>
+            <input className={inputClass} name="hourlyRate" placeholder="Hourly rate" aria-label="Hourly rate" />
+            <input className={inputClass} name="salary" placeholder="Salary amount" aria-label="Salary amount" />
+            <input className={inputClass} name="commissionRate" placeholder="Commission rate, e.g. 70%" aria-label="Commission rate" />
+            <select className={inputClass} name="payDuration" aria-label="Pay duration" defaultValue="Biweekly">
+              <option>Weekly</option>
+              <option>Biweekly</option>
+              <option>Semimonthly</option>
+              <option>Monthly</option>
+            </select>
             <button className="sm:col-span-2 rounded-sm bg-gradient-brand px-6 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white">
               Add team member
             </button>
@@ -98,6 +126,42 @@ export default async function TeamSettingsPage({
           </form>
         )}
       </section>
+
+      {members.length > 0 && (
+        <section className="mt-8 rounded-xl border border-border bg-surface p-6">
+          <h2 className="font-serif text-2xl">Team profiles</h2>
+          <p className="mt-2 text-sm text-text-secondary">Owners can review access, services, hours, time off, revenue, and compensation. These fields feed the Staff and TeamMembers sheets for payroll support.</p>
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {members.map((member) => (
+              <article key={`${member.email}-${member.location}`} className="rounded-lg border border-border bg-white p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-serif text-2xl font-medium">{member.name}</p>
+                    <p className="text-sm text-text-secondary">{member.email} · {member.location}</p>
+                  </div>
+                  <span className="rounded-full bg-success/15 px-3 py-1 text-[11px] text-success">{member.status}</span>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <input className={inputClass} defaultValue={member.accessLevel || member.role} aria-label="Access level" />
+                  <input className={inputClass} defaultValue={member.services} placeholder="Services provided" aria-label="Services provided" />
+                  <input className={inputClass} defaultValue={member.availableHours} placeholder="Available hours" aria-label="Available hours" />
+                  <input className={inputClass} defaultValue={member.requestedTimeOff} placeholder="Requested time off" aria-label="Requested time off" />
+                  <input className={inputClass} defaultValue={member.totalHoursWorked} placeholder="Total hours worked" aria-label="Total hours worked" />
+                  <input className={inputClass} defaultValue={member.totalRevenue} placeholder="Total revenue" aria-label="Total revenue" />
+                  <select className={inputClass} defaultValue={member.compensationType || "Commission"} aria-label="Compensation type">
+                    <option>Hourly</option><option>Salary</option><option>Commission</option><option>Hourly + commission</option><option>Salary + commission</option>
+                  </select>
+                  <input className={inputClass} defaultValue={member.payDuration || "Biweekly"} aria-label="Pay duration" />
+                  <input className={inputClass} defaultValue={member.hourlyRate} placeholder="Hourly rate" aria-label="Hourly rate" />
+                  <input className={inputClass} defaultValue={member.salary} placeholder="Salary" aria-label="Salary" />
+                  <input className={inputClass} defaultValue={member.commissionRate} placeholder="Commission rate" aria-label="Commission rate" />
+                </div>
+                <p className="mt-3 text-xs text-text-muted">Profile edit fields are staged here; saving changes will append updated payroll records in the next workflow pass.</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-8 rounded-xl border border-border bg-surface p-6">
         <h2 className="font-serif text-2xl">Locations</h2>

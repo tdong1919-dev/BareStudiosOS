@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/marketing/PageShell";
 import WalletPanel from "@/components/wallet/WalletPanel";
+import { readSheetTab } from "@/lib/gviz";
 
 export const metadata: Metadata = {
   title: "Client wallet — Bare Studios OS",
@@ -17,6 +18,12 @@ export default async function WalletPage({
   const client = typeof sp.client === "string" ? sp.client : "";
   const loaded = sp.loaded === "1";
   const demo = sp.demo === "1";
+  const productRows = demo ? [] : await readSheetTab("Products");
+  const retailProducts = productRows
+    .filter((r) => (r.Active || "yes").toLowerCase() !== "no")
+    .filter((r) => (salon ? (r.Salon || "").trim().toLowerCase() === salon.trim().toLowerCase() : true))
+    .slice(0, 6)
+    .map((r) => ({ name: r.Name || "Retail product", price: Number(r.Price) || 0, inventory: Number(r.InitialInventory || r.Inventory) || 0 }));
 
   return (
     <PageShell
@@ -26,7 +33,7 @@ export default async function WalletPage({
       note={demo ? "Sample mode: actions are simulated so salons can explore the client wallet without Stripe setup." : "MVP: balances are an append-only ledger in a Wallet tab. ACH loads credit once the bank debit clears. Needs Stripe configured + the salon connected at /settings/stripe."}
       showBottomBack
     >
-      <WalletPanel initialSalon={salon} initialClient={client} loaded={loaded} demo={demo} />
+      <WalletPanel initialSalon={salon} initialClient={client} loaded={loaded} demo={demo} retailProducts={retailProducts} />
     </PageShell>
   );
 }

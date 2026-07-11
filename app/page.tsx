@@ -249,6 +249,12 @@ export default function BareStudiosHomePage() {
           </div>
         </div>
       </Section>
+      <footer className="border-t border-border px-5 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
+          <span>© Bare Studios</span>
+          <Link href="/login" className="text-[12px] uppercase tracking-[0.14em] text-text-primary hover:opacity-70">Admin login</Link>
+        </div>
+      </footer>
     </main>
   );
 }

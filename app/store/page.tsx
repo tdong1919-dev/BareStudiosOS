@@ -16,21 +16,21 @@ const SAMPLE_PRODUCTS = [
     price: 38,
     description: "Color-safe hydration clients can use between gloss appointments.",
     image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=80",
-    inventory: 18,
+    inventory: 18, threshold: 10,
   },
   {
     name: "Scalp Reset Serum",
     price: 42,
     description: "A lightweight scalp treatment to attach to refresh appointments.",
     image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=80",
-    inventory: 11,
+    inventory: 11, threshold: 10,
   },
   {
     name: "Silk Finish Oil",
     price: 34,
     description: "The take-home finish for smooth styling after color services.",
     image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=80",
-    inventory: 24,
+    inventory: 24, threshold: 10,
   },
 ];
 
@@ -56,6 +56,7 @@ export default async function StorePage({
         description: r.Description || "",
         image: r.Image || "",
         inventory: Number(r.InitialInventory || r.Inventory) || undefined,
+        threshold: Number(r.ReorderThreshold || r.Threshold) || 10,
       }))
       .filter((p) => p.name && p.price > 0);
 

@@ -6,7 +6,7 @@ const inputClass =
   "w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-text-primary placeholder:text-text-muted";
 
 export default function ClientAdder() {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", lastVisit: "", service: "", intervalDays: "42" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", lastVisit: "", service: "", intervalDays: "" });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export default function ClientAdder() {
         return;
       }
       setDone(true);
-      setForm({ name: "", email: "", phone: "", lastVisit: "", service: "", intervalDays: "42" });
+      setForm({ name: "", email: "", phone: "", lastVisit: "", service: "", intervalDays: "" });
     } catch {
       setError("Network error — please try again.");
     } finally {
@@ -49,8 +49,8 @@ export default function ClientAdder() {
           <input className={inputClass} type="date" value={form.lastVisit} onChange={set("lastVisit")} aria-label="Last visit" />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-text-secondary">Rebook every (days)</label>
-          <input className={inputClass} type="number" value={form.intervalDays} onChange={set("intervalDays")} aria-label="Interval days" />
+          <label className="mb-1 block text-xs text-text-secondary">Rebook every (days, optional)</label>
+          <input className={inputClass} type="number" placeholder="Leave blank" value={form.intervalDays} onChange={set("intervalDays")} aria-label="Interval days" />
         </div>
       </div>
       {error && <p className="text-sm text-error">{error}</p>}

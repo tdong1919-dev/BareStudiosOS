@@ -1,7 +1,9 @@
 import Link from "next/link";
+import AdminTopNav from "@/components/app/AdminTopNav";
+import { getSession } from "@/lib/auth";
 
 /** Shared chrome for Bare Studios customer and studio pages. */
-export default function PageShell({
+export default async function PageShell({
   eyebrow,
   title,
   intro,
@@ -18,8 +20,12 @@ export default function PageShell({
   wide?: boolean;
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+
   return (
     <main>
+      {session ? <AdminTopNav session={session} active={eyebrow} /> : null}
+      {!session && (
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-5">
           <Link href="/" className="font-serif text-lg tracking-wide">
@@ -30,6 +36,7 @@ export default function PageShell({
           </Link>
         </div>
       </header>
+      )}
 
       <section className={`${wide ? "max-w-6xl" : "max-w-3xl"} mx-auto px-5 py-14 sm:py-20`}>
         <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">{eyebrow}</p>

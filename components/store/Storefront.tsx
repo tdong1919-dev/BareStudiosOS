@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 
-type Product = { name: string; price: number; description: string; image: string; inventory?: number };
+type Product = { name: string; price: number; description: string; image: string; inventory?: number; threshold?: number };
 
 const inputClass =
   "w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-text-primary placeholder:text-text-muted";
@@ -16,13 +16,13 @@ export default function Storefront({ products, salon, demo = false }: { products
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: "", price: "", description: "", image: "", inventory: "" });
+  const [form, setForm] = useState({ name: "", price: "", description: "", image: "", inventory: "", threshold: "10" });
   const [photoName, setPhotoName] = useState("");
   const [added, setAdded] = useState(false);
   const [sampleOrder, setSampleOrder] = useState<string | null>(null);
 
   function resetForm() {
-    setForm({ name: "", price: "", description: "", image: "", inventory: "" });
+    setForm({ name: "", price: "", description: "", image: "", inventory: "", threshold: "10" });
     setPhotoName("");
   }
 
@@ -74,6 +74,7 @@ export default function Storefront({ products, salon, demo = false }: { products
       description: form.description.trim(),
       image: form.image.trim(),
       inventory: Number(form.inventory) || 0,
+      threshold: Number(form.threshold) || 10,
     };
     if (!demo && !salon) {
       setError("Add ?salon=Your%20Salon to the URL first.");
@@ -94,7 +95,7 @@ export default function Storefront({ products, salon, demo = false }: { products
       const res = await fetch("/api/store/product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ salon, ...form, price: newProduct.price, initialInventory: newProduct.inventory }),
+        body: JSON.stringify({ salon, ...form, price: newProduct.price, initialInventory: newProduct.inventory, reorderThreshold: newProduct.threshold }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -135,7 +136,9 @@ export default function Storefront({ products, salon, demo = false }: { products
               <p className="font-serif text-lg font-medium">{p.name}</p>
               {p.description && <p className="mt-1 text-sm text-text-secondary">{p.description}</p>}
               {typeof p.inventory === "number" && (
-                <p className="mt-2 text-xs uppercase tracking-[0.12em] text-text-muted">Inventory: {p.inventory}</p>
+                <p className={`mt-2 text-xs uppercase tracking-[0.12em] ${p.inventory < (p.threshold ?? 10) ? "text-error" : "text-text-muted"}`}>
+                  Inventory: {p.inventory}{p.inventory < (p.threshold ?? 10) ? " · low stock" : ""}
+                </p>
               )}
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-sm font-medium">${p.price.toFixed(2)}</span>
@@ -162,7 +165,10 @@ export default function Storefront({ products, salon, demo = false }: { products
               <input className={inputClass} placeholder="Product name *" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} aria-label="Name" />
               <input className={inputClass} type="number" placeholder="Price *" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} aria-label="Price" />
             </div>
-            <input className={inputClass} type="number" min={0} placeholder="Initial inventory count" value={form.inventory} onChange={(e) => setForm((f) => ({ ...f, inventory: e.target.value }))} aria-label="Initial inventory count" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <input className={inputClass} type="number" min={0} placeholder="Initial inventory count" value={form.inventory} onChange={(e) => setForm((f) => ({ ...f, inventory: e.target.value }))} aria-label="Initial inventory count" />
+              <input className={inputClass} type="number" min={0} placeholder="Low-stock reminder threshold" value={form.threshold} onChange={(e) => setForm((f) => ({ ...f, threshold: e.target.value }))} aria-label="Low-stock threshold" />
+            </div>
             <input className={inputClass} placeholder="Short description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} aria-label="Description" />
             <input className={inputClass} placeholder="Photo URL" value={form.image} onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))} aria-label="Photo URL" />
             <label className="block rounded-md border border-dashed border-border bg-white px-3 py-4 text-sm text-text-secondary">

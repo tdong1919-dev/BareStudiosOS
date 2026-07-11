@@ -21,6 +21,7 @@ const teamRules = [
   ["Booking requests", "Front desk + assigned provider", "Instant"],
   ["Concierge handoff", "Manager on duty", "Instant"],
   ["Low inventory", "Manager + purchasing owner", "Daily digest or urgent"],
+  ["Retail stock below threshold", "Owner + inventory manager", "Instant or daily digest"],
   ["Upsell cue", "Assigned provider", "At check-in and checkout"],
   ["Reviews under 3 stars", "Owner + manager", "Instant"],
   ["Payroll/financial report", "Owner", "Weekly"],
@@ -84,6 +85,16 @@ export default async function NotificationSettingsPage() {
       </div>
 
       <section className="mt-6 rounded-xl border border-border bg-surface-elevated p-6">
+        <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div>
+            <p className="font-serif text-2xl font-medium">Inventory reminder default</p>
+            <p className="mt-2 text-sm text-text-secondary">Retail reminders trigger when quantity drops below this number unless a product has its own threshold.</p>
+          </div>
+          <div className="flex gap-2">
+            <input className="w-28 rounded-md border border-border bg-white px-3 py-2 text-sm" type="number" defaultValue={10} aria-label="Default low-stock threshold" />
+            <label className="flex items-center gap-2 rounded-md border border-border bg-white px-3 py-2 text-sm"><input type="checkbox" defaultChecked /> On</label>
+          </div>
+        </div>
         <p className="font-serif text-2xl font-medium">Automation reminders shown on client profiles</p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {["Suggest purchase new lash cleanser and book 2 weeks out before client leaves.", "Invite client back for facial if it has been 90 days since last skin service.", "Ask client to leave an honest review within 24 hours after a positive checkout."].map((rule) => (

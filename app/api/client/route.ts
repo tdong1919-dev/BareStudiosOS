@@ -20,14 +20,15 @@ export async function POST(request: NextRequest) {
   const phone = (body.phone ?? "").trim();
   const lastVisit = (body.lastVisit ?? "").trim();
   const service = (body.service ?? "").trim();
-  const intervalDays = Math.max(1, Math.round(Number(body.intervalDays) || 42));
+  const rawIntervalDays = String(body.intervalDays ?? "").trim();
+  const intervalDays = rawIntervalDays ? String(Math.max(1, Math.round(Number(rawIntervalDays) || 0))) : "";
 
   if (!name) {
     return NextResponse.json({ error: "Client name is required." }, { status: 400 });
   }
 
   const sheet = await appendSheetRow("Clients", HEADERS, [
-    new Date().toISOString().slice(0, 10), session.salon, name, email, phone, lastVisit, service, String(intervalDays),
+    new Date().toISOString().slice(0, 10), session.salon, name, email, phone, lastVisit, service, intervalDays,
   ]);
 
   if (!sheet.ok) {

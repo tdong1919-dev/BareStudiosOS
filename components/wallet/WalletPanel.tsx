@@ -18,17 +18,20 @@ const UPCOMING_SERVICES = [
 ] as const;
 
 type TipChoice = "none" | "15" | "20" | "custom";
+type RetailProduct = { name: string; price: number; inventory?: number };
 
 export default function WalletPanel({
   initialSalon = "",
   initialClient = "",
   loaded = false,
   demo = false,
+  retailProducts = [],
 }: {
   initialSalon?: string;
   initialClient?: string;
   loaded?: boolean;
   demo?: boolean;
+  retailProducts?: RetailProduct[];
 }) {
   const businessName = initialSalon.trim() || "[Business Name]";
   const [client, setClient] = useState(initialClient || "Demo Customer/Patient");
@@ -42,6 +45,7 @@ export default function WalletPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(loaded ? "Payment received — balance updates within a few seconds (ACH may take a few days to clear)." : null);
+  const [retailInfo, setRetailInfo] = useState<string | null>(null);
 
   const selectedService = UPCOMING_SERVICES.find((service) => service.id === selectedServiceId) ?? UPCOMING_SERVICES[0];
   const tipAmount = allowTips
@@ -303,6 +307,37 @@ export default function WalletPanel({
             Pay from wallet
           </button>
         </div>
+      </div>
+
+
+      <div className="rounded-xl border border-border bg-surface p-6 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">Retail checkout</p>
+          <a href={`/store?salon=${encodeURIComponent(businessName)}`} className="text-[12px] uppercase tracking-[0.12em] text-text-secondary hover:text-text-primary">Manage retail</a>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(retailProducts.length ? retailProducts : [
+            { name: "Lash cleanser", price: 24, inventory: 8 },
+            { name: "Post-facial SPF", price: 38, inventory: 14 },
+          ]).map((product) => (
+            <button
+              key={product.name}
+              type="button"
+              onClick={() => setRetailInfo(`${product.name} added to checkout. Inventory source: Products tab.`)}
+              className="rounded-md border border-border bg-white p-3 text-left text-sm hover:bg-surface-elevated"
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span>
+                  <span className="block font-medium">{product.name}</span>
+                  <span className="text-xs text-text-muted">Inventory: {product.inventory ?? "not set"}</span>
+                </span>
+                <span>${product.price.toFixed(2)}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        {retailInfo && <p className="text-xs text-success">{retailInfo}</p>}
+        <p className="text-xs text-text-muted">Retail products come from the Products tab and should stay synced with inventory counts.</p>
       </div>
 
       {error && <p className="text-sm text-error">{error}</p>}

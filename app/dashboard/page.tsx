@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AdminTopNav from "@/components/app/AdminTopNav";
 import { requireSession } from "@/lib/auth";
 import { getBusinessProfile, listLocations } from "@/lib/account-data";
 import { readSheetTab } from "@/lib/gviz";
@@ -8,19 +9,10 @@ export const metadata: Metadata = {
   title: "Dashboard - Bare Studios OS",
 };
 
-const nav = [
-  { href: "/dashboard", label: "Calendar", active: true },
-  { href: "/wallet?salon=Bare%20Studios", label: "Checkout" },
-  { href: "/clients", label: "Customers" },
-  { href: "/promotions", label: "Marketing" },
-  { href: "/book", label: "Booking site" },
-  { href: "/assistants", label: "Assistance hub" },
-  { href: "/settings/notifications", label: "Settings" },
-];
 
 const staff = ["Ciara", "Na", "Andy", "Cindy"];
 const week = ["Mon 6", "Tue 7", "Wed 8", "Thu 9", "Fri 10", "Sat 11", "Sun 12"];
-const times = ["9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM"];
+const times = ["7 AM", "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM"];
 const appointments = [
   { day: 1, row: 1, title: "Classic fill", client: "Jasmine R.", staff: "Na", color: "bg-[#d9eadf]" },
   { day: 2, row: 3, title: "Custom facial", client: "Sandra M.", staff: "Ciara", color: "bg-[#ead9c3]" },
@@ -51,20 +43,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-text-primary">
-      <header className="sticky top-0 z-20 border-b border-[#2f2f2f] bg-[#30302f] text-white">
-        <div className="flex h-14 items-center gap-2 px-4">
-          <Link href="/dashboard" className="mr-2 font-serif text-2xl">B</Link>
-          <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
-            {nav.map((item) => (
-              <Link key={item.href} href={item.href} className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ${item.active ? "bg-white/15" : "hover:bg-white/10"}`}>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <Link href="/settings/stripe" className="hidden rounded-md bg-white px-3 py-2 text-xs font-medium text-[#30302f] sm:block">Connect Stripe</Link>
-          <div className="hidden max-w-[220px] truncate text-sm md:block">{businessName}</div>
-        </div>
-      </header>
+      <AdminTopNav session={session} active="Calendar" />
 
       <section className="border-b border-border bg-white px-5 py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -81,6 +60,7 @@ export default async function DashboardPage() {
             <Link href="/book" className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium">Request appointment</Link>
             <Link href="/wallet?salon=Bare%20Studios" className="rounded-md bg-[#171717] px-4 py-2 text-sm font-medium text-white">Checkout</Link>
             <Link href="/clients" className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium">Add customer</Link>
+            <Link href="/store?salon=Bare%20Studios" className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium">Retail</Link>
           </div>
         </div>
       </section>
@@ -131,7 +111,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 border-b border-border bg-[#fbfaf7] text-sm md:grid-cols-4">
+          <div className="grid grid-cols-2 border-b border-border bg-[#fbfaf7] text-sm sm:grid-cols-4">
             <div className="border-r border-border p-3"><strong>{openBookings}</strong><span className="ml-2 text-text-secondary">booking requests</span></div>
             <div className="border-r border-border p-3"><strong>{newConcierge}</strong><span className="ml-2 text-text-secondary">inbox alerts</span></div>
             <div className="border-r border-border p-3"><strong>{inventory.length}</strong><span className="ml-2 text-text-secondary">inventory flags</span></div>

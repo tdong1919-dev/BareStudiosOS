@@ -23,6 +23,17 @@ export const TEAM_MEMBER_HEADERS = [
   "Name",
   "Email",
   "Role",
+  "Access Level",
+  "Services",
+  "Available Hours",
+  "Requested Time Off",
+  "Total Hours Worked",
+  "Total Revenue",
+  "Compensation Type",
+  "Hourly Rate",
+  "Salary",
+  "Commission Rate",
+  "Pay Duration",
   "Status",
   "Billing Status",
 ];
@@ -76,6 +87,17 @@ export type TeamMember = {
   name: string;
   email: string;
   role: string;
+  accessLevel?: string;
+  services?: string;
+  availableHours?: string;
+  requestedTimeOff?: string;
+  totalHoursWorked?: string;
+  totalRevenue?: string;
+  compensationType?: string;
+  hourlyRate?: string;
+  salary?: string;
+  commissionRate?: string;
+  payDuration?: string;
   status: string;
   billingStatus: string;
 };
@@ -176,6 +198,17 @@ export async function listTeamMembers(ownerEmail: string, salon: string): Promis
       name: row.Name || "",
       email: row.Email || "",
       role: row.Role || "Team member",
+      accessLevel: row["Access Level"] || row.Role || "Team member",
+      services: row.Services || "",
+      availableHours: row["Available Hours"] || "",
+      requestedTimeOff: row["Requested Time Off"] || "",
+      totalHoursWorked: row["Total Hours Worked"] || "",
+      totalRevenue: row["Total Revenue"] || "",
+      compensationType: row["Compensation Type"] || "",
+      hourlyRate: row["Hourly Rate"] || "",
+      salary: row.Salary || "",
+      commissionRate: row["Commission Rate"] || "",
+      payDuration: row["Pay Duration"] || "",
       status: row.Status || "active",
       billingStatus: row["Billing Status"] || "included",
     }));
@@ -190,6 +223,17 @@ export async function appendTeamMember(member: TeamMember) {
     member.name,
     normalizeEmail(member.email),
     member.role,
+    member.accessLevel || member.role,
+    member.services || "",
+    member.availableHours || "",
+    member.requestedTimeOff || "",
+    member.totalHoursWorked || "",
+    member.totalRevenue || "",
+    member.compensationType || "",
+    member.hourlyRate || "",
+    member.salary || "",
+    member.commissionRate || "",
+    member.payDuration || "",
     member.status || "active",
     member.billingStatus || "included",
   ]);

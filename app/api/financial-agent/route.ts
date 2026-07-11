@@ -15,6 +15,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { appendSheetRow } from "@/lib/sheets";
 import { getSession } from "@/lib/auth";
 import { FINANCIAL_ASSISTANT_SYSTEM_PROMPT } from "@/lib/agent-prompts";
+import { financialContextForAssistant, getFinancialReportRows, summarizeFinancialRows } from "@/lib/financial-reports";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -164,6 +165,7 @@ export async function POST(request: NextRequest) {
   }
 
   const client = new Anthropic();
+  const financialContext = financialContextForAssistant(summarizeFinancialRows(await getFinancialReportRows()));
 
   try {
     let reply = "";
@@ -172,7 +174,7 @@ export async function POST(request: NextRequest) {
         model: MODEL,
         max_tokens: 8000,
         thinking: { type: "adaptive" },
-        system: FINANCIAL_ASSISTANT_SYSTEM_PROMPT,
+        system: `${FINANCIAL_ASSISTANT_SYSTEM_PROMPT}\n\n${financialContext}`,
         tools: TOOLS,
         messages,
       });

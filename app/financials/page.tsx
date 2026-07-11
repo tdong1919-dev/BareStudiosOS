@@ -40,8 +40,8 @@ export default async function FinancialsPage() {
         </div>
 
         <p className="mt-4 text-xs text-text-muted leading-relaxed">
-          The assistant works from the figures you give it (it has no live access to your bank or POS). Commission
-          settings save to a Staff tab and payroll runs to a Payroll tab in your sheet.
+          The assistant can use imported FinancialReports rows from your Google Sheet plus any figures you give it.
+          Commission settings save to a Staff tab and payroll runs to a Payroll tab in your sheet.
         </p>
       </section>
     </main>

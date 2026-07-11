@@ -4,11 +4,12 @@ export const BARE_STUDIOS = {
   phone: "(443) 278-3919",
   conciergePhone: "(443) 278-3919",
   barberPhone: "(443) 559-2037",
+  womensHairPhone: "(410) 652-4232",
   careersPhone: "(443) 564-0030",
   website: "https://www.barestudios.site",
 };
 
-export type BareServiceKind = "barber" | "facial" | "body" | "lashExtensions" | "lash" | "brow" | "waxing" | "addon";
+export type BareServiceKind = "barber" | "womensHair" | "facial" | "body" | "lashExtensions" | "lash" | "brow" | "waxing" | "addon";
 
 export type BareService = {
   name: string;
@@ -29,12 +30,22 @@ export const BARE_SERVICE_CATEGORIES: { name: string; services: BareService[] }[
         duration: "Call or text to book",
         price: "Book directly with Andy",
         kind: "barber",
-        note: "Andy books barbering directly by call or text.",
       },
     ],
   },
   {
-    name: "BARE SKN Facials",
+    name: "Womens Hair",
+    services: [
+      {
+        name: "Womens Hair with Cindy",
+        duration: "Call or text to book",
+        price: "Book directly with Cindy",
+        kind: "womensHair",
+      },
+    ],
+  },
+  {
+    name: "Facials",
     services: [
       {
         name: "BARE SKN Signature Facial (Tier 1)",
@@ -72,11 +83,6 @@ export const BARE_SERVICE_CATEGORIES: { name: string; services: BareService[] }[
           "A results-driven exfoliating treatment powered by Aveda plant-based peel technology to resurface skin, improve texture, and reduce the appearance of fine lines, uneven tone, and congestion while remaining gentle.",
         bestFor: "Advanced exfoliation, improved skin tone, and visible renewal with minimal irritation.",
       },
-    ],
-  },
-  {
-    name: "BARE SKN Body Treatments",
-    services: [
       {
         name: "BARE SKN Back Facial",
         duration: "45 min",
@@ -98,25 +104,25 @@ export const BARE_SERVICE_CATEGORIES: { name: string; services: BareService[] }[
     ],
   },
   {
-    name: "BARE BEAUTY",
+    name: "Lashes",
     services: [
-      { name: "Korean Lash Lift and Tint", duration: "60 min", price: "$90", kind: "lash" },
       { name: "Classic Lash Extensions", duration: "120 min", price: "$150", kind: "lashExtensions" },
       { name: "Lash Full Set", duration: "120 min", price: "$150", kind: "lashExtensions" },
-      { name: "Lash Fill In", duration: "60 min", price: "$80", kind: "lashExtensions" },
       { name: "Lash Half Set", duration: "90 min", price: "$99", kind: "lashExtensions" },
       { name: "Foreign Lash Refill", duration: "90 min", price: "$150", kind: "lashExtensions" },
       { name: "Light Volume / Hybrid Full Set Extensions", duration: "120 min", price: "$220", kind: "lashExtensions" },
       { name: "Fluffy Volume Full Set", duration: "120 min", price: "$230", kind: "lashExtensions" },
       { name: "Megavolume Full Set", duration: "150 min", price: "$250", kind: "lashExtensions" },
-      { name: "Lash Removal", duration: "30 min", price: "$55", kind: "lashExtensions" },
+      { name: "Lash Fill In", duration: "60 min", price: "$80", kind: "lashExtensions" },
       { name: "Light Volume / Hybrid Lash Refill", duration: "90 min", price: "$90", kind: "lashExtensions" },
       { name: "Fluffy Volume Lash Refill", duration: "90 min", price: "$100", kind: "lashExtensions" },
       { name: "Megavolume Lash Refill", duration: "120 min", price: "$145", kind: "lashExtensions" },
+      { name: "Lash Removal", duration: "30 min", price: "$55", kind: "lashExtensions" },
+      { name: "Korean Lash Lift and Tint", duration: "60 min", price: "$90", kind: "lash" },
     ],
   },
   {
-    name: "BARE BROWS",
+    name: "Brows",
     services: [
       { name: "Brow Sculpt (Thread or Wax)", duration: "30 min", price: "Price varies", kind: "brow" },
       { name: "Brow Lamination", duration: "45 min", price: "Price varies", kind: "brow", note: "Includes brow sculpt." },
@@ -131,7 +137,7 @@ export const BARE_SERVICE_CATEGORIES: { name: string; services: BareService[] }[
     ],
   },
   {
-    name: "Add-ons",
+    name: "Add ons",
     services: [
       { name: "Additional 15 Minutes", duration: "+15 min", price: "$30", kind: "addon" },
       { name: "Additional 30 Minutes", duration: "+30 min", price: "$60", kind: "addon" },

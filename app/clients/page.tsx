@@ -4,6 +4,8 @@ import PageShell from "@/components/marketing/PageShell";
 import ClientAdder from "@/components/agents/ClientAdder";
 import ClientCsvImporter from "@/components/clients/ClientCsvImporter";
 import ClientDirectory from "@/components/clients/ClientDirectory";
+import DuplicateCleanup from "@/components/clients/DuplicateCleanup";
+import { clientRowKey, mergedDuplicateKeys } from "@/lib/client-records";
 import { readSheetTab } from "@/lib/gviz";
 import { overdueClients } from "@/lib/reengagement";
 import { requireSession } from "@/lib/auth";
@@ -26,9 +28,14 @@ const actionButtonClass = "rounded-sm border border-border bg-surface-elevated p
 
 export default async function ClientsPage() {
   const session = await requireSession();
-  const allRows = await readSheetTab("Clients");
+  const [allRows, mergeRows] = await Promise.all([
+    readSheetTab("Clients"),
+    readSheetTab("ClientMerges"),
+  ]);
   const savedRows = allRows.filter((r) => (r.Salon || "").trim().toLowerCase() === session.salon.trim().toLowerCase());
-  const rows = savedRows.length > 0 ? savedRows : sampleClients;
+  const mergedKeys = mergedDuplicateKeys(mergeRows, session.salon);
+  const activeSavedRows = savedRows.filter((row) => !mergedKeys.has(clientRowKey(row)));
+  const rows = activeSavedRows.length > 0 ? activeSavedRows : sampleClients;
   const usingSampleClients = savedRows.length === 0;
   const due = overdueClients(rows);
 
@@ -63,6 +70,10 @@ export default async function ClientsPage() {
           </div>
         </div>
       </section>
+
+      {!usingSampleClients && (
+        <DuplicateCleanup rows={activeSavedRows} mergedCount={mergedKeys.size} />
+      )}
 
       <ClientDirectory rows={rows} />
 

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { appendSheetRow } from "@/lib/sheets";
+import { appendSheetRows } from "@/lib/sheets";
 
 const HEADERS = ["Added", "Salon", "Name", "Email", "Phone", "Last visit", "Service", "Interval days"];
-const MAX_IMPORT_ROWS = 25;
+const MAX_IMPORT_ROWS = 100;
 
 type ImportClient = {
   name?: string;
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let imported = 0;
   let skipped = 0;
-  let lastError = "";
+  const now = new Date().toISOString().slice(0, 10);
+  const rowsToSave: (string | number)[][] = [];
 
   for (const row of rows) {
     const name = String(row.name || "").trim();
@@ -45,31 +45,36 @@ export async function POST(request: NextRequest) {
 
     if (!name && !email && !phone) {
       skipped++;
-      continue;
+    } else {
+      rowsToSave.push([
+        now,
+        session.salon,
+        name || email || phone,
+        email,
+        phone,
+        String(row.lastVisit || "").trim(),
+        String(row.service || "").trim(),
+        String(row.intervalDays || "").trim(),
+      ]);
     }
-
-    const saved = await appendSheetRow("Clients", HEADERS, [
-      new Date().toISOString().slice(0, 10),
-      session.salon,
-      name || email || phone,
-      email,
-      phone,
-      String(row.lastVisit || "").trim(),
-      String(row.service || "").trim(),
-      String(row.intervalDays || "").trim(),
-    ]);
-
-    if (!saved.ok) {
-      lastError = saved.error || `Google Sheets could not save ${name || email || phone}.`;
-      break;
-    }
-
-    imported++;
   }
 
-  if (imported === 0 && lastError) {
-    return NextResponse.json({ error: lastError }, { status: 502 });
+  if (rowsToSave.length === 0) {
+    return NextResponse.json({ ok: true, imported: 0, skipped });
   }
 
-  return NextResponse.json({ ok: true, imported, skipped, error: lastError || undefined });
+  const saved = await appendSheetRows("Clients", HEADERS, rowsToSave);
+
+  if (!saved.ok) {
+    return NextResponse.json(
+      {
+        error:
+          saved.error ||
+          "Google Sheets could not save this batch. Make sure the Apps Script has been updated to support bulk rows.",
+      },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.json({ ok: true, imported: rowsToSave.length, skipped });
 }

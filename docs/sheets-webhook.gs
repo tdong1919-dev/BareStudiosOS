@@ -35,12 +35,12 @@ function doPost(e) {
     var write = normalizeWrite_(payload);
     var sheet = getOrCreateSheet_(write.tab);
     ensureHeaders_(sheet, write.headers);
-    appendMappedRow_(sheet, write.headers, write.row);
+    var appended = appendMappedRows_(sheet, write.headers, write.rows);
 
     return json_({
       ok: true,
       tab: write.tab,
-      appended: 1,
+      appended: appended,
       time: new Date().toISOString()
     });
   } catch (err) {
@@ -73,14 +73,20 @@ function verifySecret_(payload) {
 }
 
 function normalizeWrite_(payload) {
-  if (payload.tab && payload.headers && payload.row) {
+  if (payload.tab && payload.headers && (payload.row || payload.rows)) {
     if (!Array.isArray(payload.headers)) throw new Error('headers must be an array');
-    if (!Array.isArray(payload.row)) throw new Error('row must be an array');
+    if (payload.row && !Array.isArray(payload.row)) throw new Error('row must be an array');
+    if (payload.rows && !Array.isArray(payload.rows)) throw new Error('rows must be an array');
+
+    var rows = payload.rows || [payload.row];
+    rows.forEach(function (row) {
+      if (!Array.isArray(row)) throw new Error('each rows item must be an array');
+    });
 
     return {
       tab: cleanName_(payload.tab),
       headers: payload.headers.map(String),
-      row: payload.row
+      rows: rows
     };
   }
 
@@ -104,7 +110,7 @@ function normalizeLead_(payload) {
   return {
     tab: cleanName_(payload.tab || 'Leads'),
     headers: headers,
-    row: [
+    rows: [[
       payload.created_at || payload.createdAt || new Date().toISOString(),
       payload.salonName || payload.salon_name || payload.salon || '',
       payload.name || '',
@@ -115,7 +121,7 @@ function normalizeLead_(payload) {
       payload.source || 'website',
       payload.notes || payload.message || '',
       JSON.stringify(payload)
-    ]
+    ]]
   };
 }
 
@@ -170,17 +176,22 @@ function ensureHeaders_(sheet, headers) {
   }
 }
 
-function appendMappedRow_(sheet, headers, row) {
+function appendMappedRows_(sheet, headers, rows) {
+  if (!rows || rows.length === 0) return 0;
+
   var currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function (value) {
     return String(value || '').trim();
   });
 
-  var values = currentHeaders.map(function (header) {
-    var idx = headers.indexOf(header);
-    return idx >= 0 ? row[idx] : '';
+  var values = rows.map(function (row) {
+    return currentHeaders.map(function (header) {
+      var idx = headers.indexOf(header);
+      return idx >= 0 ? row[idx] : '';
+    });
   });
 
-  sheet.appendRow(values);
+  sheet.getRange(sheet.getLastRow() + 1, 1, values.length, currentHeaders.length).setValues(values);
+  return values.length;
 }
 
 function formatHeader_(sheet, width) {

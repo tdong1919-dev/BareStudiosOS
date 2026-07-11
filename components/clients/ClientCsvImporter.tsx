@@ -14,7 +14,7 @@ type ParsedClient = {
 
 const defaultButtonClass =
   "rounded-sm border border-border bg-surface-elevated px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-linen";
-const IMPORT_BATCH_SIZE = 10;
+const IMPORT_BATCH_SIZE = 75;
 const DB_NAME = "bare-studios-imports";
 const DB_VERSION = 1;
 const ROW_STORE = "clientRows";

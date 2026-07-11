@@ -14,22 +14,12 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { appendSheetRow } from "@/lib/sheets";
 import { getSession } from "@/lib/auth";
+import { FINANCIAL_ASSISTANT_SYSTEM_PROMPT } from "@/lib/agent-prompts";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MODEL = "claude-opus-4-8";
-
-const SYSTEM = `You are the Financial Assistant inside Bare Studios OS — a financial assistant for salon, spa, and medspa owners. You help with commission structures, payroll calculations, and plain-English advice to improve the bottom line.
-
-Rules:
-- For ANY payroll or commission arithmetic, call the calculate_payroll tool. Never do the math yourself.
-- When the owner sets or changes a staff member's commission rate or hourly wage, call save_staff to record it in their sheet.
-- After finalizing a payroll run, save it by calling calculate_payroll with save set to true.
-- Ask only for the numbers you actually need. If a value is missing, ask once, concisely.
-- Be concise and direct. Lead with the answer in plain language — no jargon, no long preamble.
-- When it helps, offer one or two specific, actionable ways to improve margin (pricing, commission mix, retail attach rate, slow-day promotions), grounded in the numbers at hand — not generic tips.
-- You work only from figures the owner gives you; you have no live access to their bank or POS.`;
 
 type Entry = {
   name: string;
@@ -182,7 +172,7 @@ export async function POST(request: NextRequest) {
         model: MODEL,
         max_tokens: 8000,
         thinking: { type: "adaptive" },
-        system: SYSTEM,
+        system: FINANCIAL_ASSISTANT_SYSTEM_PROMPT,
         tools: TOOLS,
         messages,
       });

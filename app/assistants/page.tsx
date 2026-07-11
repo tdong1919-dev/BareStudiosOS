@@ -22,6 +22,11 @@ export default async function AssistantsPage() {
       intro="Use each agent directly, review its report, and route client-facing work back into the dashboard without jumping between apps."
       wide
     >
+      <div className="mb-5 flex justify-end">
+        <Link href="/assistants/settings" className="rounded-md bg-gradient-brand px-4 py-2 text-sm font-medium text-white">
+          Assistant settings
+        </Link>
+      </div>
       <div className="grid gap-4 md:grid-cols-[0.85fr_1.15fr]">
         <div className="rounded-lg border border-border bg-surface p-5">
           <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Agent roster</p>

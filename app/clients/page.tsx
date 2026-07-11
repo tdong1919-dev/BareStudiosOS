@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageShell from "@/components/marketing/PageShell";
 import ClientAdder from "@/components/agents/ClientAdder";
+import ClientCsvImporter from "@/components/clients/ClientCsvImporter";
 import { readSheetTab } from "@/lib/gviz";
 import { overdueClients } from "@/lib/reengagement";
 import { requireSession } from "@/lib/auth";
@@ -54,10 +55,7 @@ export default async function ClientsPage() {
       wide
     >
       <div className="mb-6 flex flex-wrap gap-3">
-        <label className={`cursor-pointer ${actionButtonClass}`}>
-          Batch Import CSV
-          <input type="file" accept=".csv" className="sr-only" aria-label="Batch import customer CSV" />
-        </label>
+        <ClientCsvImporter className={actionButtonClass} />
         <Link href="/settings/stripe" className={actionButtonClass}>Stripe card settings</Link>
         <Link href="/settings/notifications" className={actionButtonClass}>Notification settings</Link>
       </div>

@@ -32,6 +32,50 @@ export type FinancialSummary = {
   recentRows: FinancialReportRow[];
 };
 
+const GROSS_KEYS = [
+  "Gross sales",
+  "Gross Sales",
+  "Gross",
+  "Sales",
+  "Total Sales",
+  "Total",
+  "Amount",
+  "Amount Paid",
+  "Paid",
+  "Price",
+  "Subtotal",
+  "Service Sales",
+  "Product Sales",
+  "Charge",
+  "Payment Amount",
+  "Grand Total",
+];
+
+const NET_KEYS = [
+  "Net sales",
+  "Net Sales",
+  "Net",
+  "Net Amount",
+  "Net Revenue",
+  "Collected",
+  "Total Collected",
+  "Deposit",
+  "Payout",
+  "Paid",
+  "Amount Paid",
+  "Payments",
+  "Payment Amount",
+];
+
+const TIP_KEYS = ["Tips", "Tip", "Gratuity", "Total Tips"];
+const TAX_KEYS = ["Tax", "Taxes", "Sales Tax", "Total Tax"];
+const FEE_KEYS = ["Fees", "Processing Fee", "Credit Card Fee", "Card Fee", "Stripe Fee", "Processor Fee"];
+const DISCOUNT_KEYS = ["Discounts", "Discount", "Promo", "Promotions", "Coupon", "Coupons"];
+const DATE_KEYS = ["Date", "Transaction Date", "Close Date", "Checkout Date", "Appointment Date", "Payment Date"];
+const CLIENT_KEYS = ["Client", "Client Name", "Customer", "Customer Name", "Name"];
+const SERVICE_KEYS = ["Service", "Service Name", "Item", "Item Name", "Description", "Product", "Class"];
+const PROVIDER_KEYS = ["Provider", "Service Provider", "Employee", "Staff", "Team Member", "Artist"];
+
 export function reportSlug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
@@ -41,9 +85,12 @@ export function titleFromReportSlug(slug: string) {
 }
 
 export function moneyValue(value?: string) {
-  const cleaned = String(value || "").replace(/[^0-9.-]/g, "");
+  const raw = String(value || "").trim();
+  const negative = /^\(.*\)$/.test(raw);
+  const cleaned = raw.replace(/[^0-9.-]/g, "");
   const parsed = Number(cleaned);
-  return Number.isFinite(parsed) ? parsed : 0;
+  if (!Number.isFinite(parsed)) return 0;
+  return negative ? -Math.abs(parsed) : parsed;
 }
 
 export function money(n: number) {
@@ -53,6 +100,55 @@ export function money(n: number) {
 export async function getFinancialReportRows() {
   const rows = await readSheetTab("FinancialReports").catch(() => []);
   return rows as FinancialReportRow[];
+}
+
+function parseRaw(row: FinancialReportRow) {
+  if (!row.Raw) return {};
+  try {
+    const parsed = JSON.parse(row.Raw) as Record<string, string>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function keyFor(label: string) {
+  return label.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function rawValue(row: FinancialReportRow, labels: string[]) {
+  const raw = parseRaw(row);
+  const wanted = new Set(labels.map(keyFor));
+  const match = Object.entries(raw).find(([key, value]) => wanted.has(keyFor(key)) && String(value || "").trim());
+  return match ? String(match[1] || "").trim() : "";
+}
+
+export function reportTextValue(row: FinancialReportRow, primary: keyof FinancialReportRow, rawLabels: string[]) {
+  return String(row[primary] || "").trim() || rawValue(row, rawLabels);
+}
+
+export function reportMoneyValue(row: FinancialReportRow, primary: keyof FinancialReportRow, rawLabels: string[]) {
+  return moneyValue(String(row[primary] || "").trim() || rawValue(row, rawLabels));
+}
+
+export function reportGrossValue(row: FinancialReportRow) {
+  return reportMoneyValue(row, "Gross sales", GROSS_KEYS);
+}
+
+export function reportNetValue(row: FinancialReportRow) {
+  const net = reportMoneyValue(row, "Net sales", NET_KEYS);
+  return net || reportGrossValue(row);
+}
+
+export function reportDisplay(row: FinancialReportRow) {
+  return {
+    date: reportTextValue(row, "Date", DATE_KEYS),
+    client: reportTextValue(row, "Client", CLIENT_KEYS),
+    service: reportTextValue(row, "Service", SERVICE_KEYS),
+    provider: reportTextValue(row, "Provider", PROVIDER_KEYS),
+    gross: reportTextValue(row, "Gross sales", GROSS_KEYS),
+    net: reportTextValue(row, "Net sales", NET_KEYS),
+  };
 }
 
 export function summarizeFinancialRows(rows: FinancialReportRow[]): FinancialSummary {
@@ -66,14 +162,14 @@ export function summarizeFinancialRows(rows: FinancialReportRow[]): FinancialSum
 
   rows.forEach((row) => {
     const type = row["Report type"] || "Financial report";
-    const gross = moneyValue(row["Gross sales"]);
-    const net = moneyValue(row["Net sales"]);
+    const gross = reportGrossValue(row);
+    const net = reportNetValue(row);
     grossSales += gross;
     netSales += net;
-    tips += moneyValue(row.Tips);
-    tax += moneyValue(row.Tax);
-    fees += moneyValue(row.Fees);
-    discounts += moneyValue(row.Discounts);
+    tips += reportMoneyValue(row, "Tips", TIP_KEYS);
+    tax += reportMoneyValue(row, "Tax", TAX_KEYS);
+    fees += reportMoneyValue(row, "Fees", FEE_KEYS);
+    discounts += reportMoneyValue(row, "Discounts", DISCOUNT_KEYS);
 
     const existing = byType.get(type) || { name: type, count: 0, grossSales: 0, netSales: 0 };
     existing.count += 1;
@@ -83,7 +179,7 @@ export function summarizeFinancialRows(rows: FinancialReportRow[]): FinancialSum
   });
 
   const recentRows = [...rows]
-    .sort((a, b) => String(b.Date || b.Added || "").localeCompare(String(a.Date || a.Added || "")))
+    .sort((a, b) => String(reportDisplay(b).date || b.Added || "").localeCompare(String(reportDisplay(a).date || a.Added || "")))
     .slice(0, 12);
 
   return {
@@ -117,7 +213,10 @@ export function financialContextForAssistant(summary: FinancialSummary) {
     `- ${type.name}: ${type.count} rows, gross ${money(type.grossSales)}, net ${money(type.netSales)}`
   ));
   const recentLines = summary.recentRows.slice(0, 8).map((row) => (
-    `- ${row.Date || row.Added || "No date"} | ${row.Client || "No client"} | ${row.Service || row["Report type"] || "Report row"} | gross ${row["Gross sales"] || "$0"} | net ${row["Net sales"] || "$0"}`
+    (() => {
+      const display = reportDisplay(row);
+      return `- ${display.date || row.Added || "No date"} | ${display.client || "No client"} | ${display.service || row["Report type"] || "Report row"} | gross ${display.gross || "$0"} | net ${display.net || "$0"}`;
+    })()
   ));
 
   return [

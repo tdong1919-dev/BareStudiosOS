@@ -3,7 +3,7 @@ import Link from "next/link";
 import PageShell from "@/components/marketing/PageShell";
 import FinancialReportImporter from "@/components/reports/FinancialReportImporter";
 import { requireSession } from "@/lib/auth";
-import { getFinancialReportRows, money, reportSlug, summarizeFinancialRows } from "@/lib/financial-reports";
+import { getFinancialReportRows, money, reportDisplay, reportGrossValue, reportNetValue, reportSlug, summarizeFinancialRows } from "@/lib/financial-reports";
 
 export const metadata: Metadata = { title: "Reports - Bare Studios OS" };
 
@@ -36,19 +36,74 @@ export default async function ReportsPage() {
         </span>
       </div>
       {financialSummary.rowCount > 0 && (
-        <section className="mb-6 grid gap-4 md:grid-cols-4">
-          {[
-            ["Gross sales", money(financialSummary.grossSales)],
-            ["Net sales", money(financialSummary.netSales)],
-            ["Tips", money(financialSummary.tips)],
-            ["Fees", money(financialSummary.fees)],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-xl border border-border bg-white p-5">
-              <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{label}</p>
-              <p className="mt-2 font-serif text-3xl">{value}</p>
+        <>
+          <section className="mb-6 grid gap-4 md:grid-cols-4">
+            {[
+              ["Gross sales", money(financialSummary.grossSales)],
+              ["Net sales", money(financialSummary.netSales)],
+              ["Tips", money(financialSummary.tips)],
+              ["Fees", money(financialSummary.fees)],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-xl border border-border bg-white p-5">
+                <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{label}</p>
+                <p className="mt-2 font-serif text-3xl">{value}</p>
+              </div>
+            ))}
+          </section>
+          <section className="mb-6 rounded-xl border border-border bg-white p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-text-muted">Imported preview</p>
+                <h2 className="mt-2 font-serif text-2xl">Recent financial rows</h2>
+              </div>
+              <a
+                href={csvHref([
+                  ["Report type", "Date", "Client", "Service", "Provider", "Gross", "Net"],
+                  ...financialSummary.rows.map((row) => [
+                    row["Report type"] || "",
+                    reportDisplay(row).date,
+                    reportDisplay(row).client,
+                    reportDisplay(row).service,
+                    reportDisplay(row).provider,
+                    String(reportGrossValue(row) || ""),
+                    String(reportNetValue(row) || ""),
+                  ]),
+                ])}
+                download="bare-studios-imported-financial-reports.csv"
+                className="rounded-md border border-border bg-surface-elevated px-3 py-2 text-xs font-medium hover:bg-linen"
+              >
+                Download imported CSV
+              </a>
             </div>
-          ))}
-        </section>
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="text-xs uppercase tracking-[0.12em] text-text-muted">
+                  <tr>
+                    {["Type", "Date", "Client", "Service", "Provider", "Gross", "Net"].map((header) => (
+                      <th key={header} className="border-b border-border px-3 py-2 font-medium">{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {financialSummary.recentRows.map((row, index) => {
+                    const display = reportDisplay(row);
+                    return (
+                      <tr key={`${row["Report type"]}-${display.date}-${index}`}>
+                        <td className="border-b border-border px-3 py-2">{row["Report type"] || "-"}</td>
+                        <td className="border-b border-border px-3 py-2">{display.date || row.Added || "-"}</td>
+                        <td className="border-b border-border px-3 py-2">{display.client || "-"}</td>
+                        <td className="border-b border-border px-3 py-2">{display.service || "-"}</td>
+                        <td className="border-b border-border px-3 py-2">{display.provider || "-"}</td>
+                        <td className="border-b border-border px-3 py-2">{money(reportGrossValue(row))}</td>
+                        <td className="border-b border-border px-3 py-2">{money(reportNetValue(row))}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
       )}
       <div className="grid gap-5 lg:grid-cols-2">
         {groups.map(([title, items]) => (

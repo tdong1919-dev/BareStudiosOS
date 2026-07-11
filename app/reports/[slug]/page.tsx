@@ -4,6 +4,9 @@ import { requireSession } from "@/lib/auth";
 import {
   getFinancialReportRows,
   money,
+  reportDisplay,
+  reportGrossValue,
+  reportNetValue,
   rowsForReportSlug,
   summarizeFinancialRows,
   titleFromReportSlug,
@@ -30,12 +33,12 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ s
         ["Report type", "Date", "Client", "Service", "Provider", "Gross sales", "Net sales", "Payment type"],
         ...activeRows.map((row) => [
           row["Report type"] || title,
-          row.Date || "",
-          row.Client || "",
-          row.Service || "",
-          row.Provider || "",
-          row["Gross sales"] || "",
-          row["Net sales"] || "",
+          reportDisplay(row).date || "",
+          reportDisplay(row).client || "",
+          reportDisplay(row).service || "",
+          reportDisplay(row).provider || "",
+          String(reportGrossValue(row) || reportDisplay(row).gross || ""),
+          String(reportNetValue(row) || reportDisplay(row).net || ""),
           row["Payment type"] || "",
         ]),
       ]
@@ -84,13 +87,13 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ s
               </thead>
               <tbody>
                 {summary.recentRows.map((row, index) => (
-                  <tr key={`${row.Date}-${row.Client}-${index}`}>
-                    <td className="border-b border-border px-3 py-2">{row.Date || row.Added || "-"}</td>
-                    <td className="border-b border-border px-3 py-2">{row.Client || "-"}</td>
-                    <td className="border-b border-border px-3 py-2">{row.Service || row["Report type"] || "-"}</td>
-                    <td className="border-b border-border px-3 py-2">{row.Provider || "-"}</td>
-                    <td className="border-b border-border px-3 py-2">{row["Gross sales"] || "-"}</td>
-                    <td className="border-b border-border px-3 py-2">{row["Net sales"] || "-"}</td>
+                  <tr key={`${reportDisplay(row).date}-${reportDisplay(row).client}-${index}`}>
+                    <td className="border-b border-border px-3 py-2">{reportDisplay(row).date || row.Added || "-"}</td>
+                    <td className="border-b border-border px-3 py-2">{reportDisplay(row).client || "-"}</td>
+                    <td className="border-b border-border px-3 py-2">{reportDisplay(row).service || row["Report type"] || "-"}</td>
+                    <td className="border-b border-border px-3 py-2">{reportDisplay(row).provider || "-"}</td>
+                    <td className="border-b border-border px-3 py-2">{money(reportGrossValue(row))}</td>
+                    <td className="border-b border-border px-3 py-2">{money(reportNetValue(row))}</td>
                   </tr>
                 ))}
               </tbody>

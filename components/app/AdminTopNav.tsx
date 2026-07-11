@@ -7,9 +7,19 @@ const nav = [
   { href: "/clients", label: "Customers" },
   { href: "/store?salon=Bare%20Studios", label: "Retail" },
   { href: "/promotions", label: "Marketing" },
-  { href: "/assistants", label: "Assistance hub" },
+  { href: "/reports", label: "Reports" },
   { href: "/settings/team", label: "Settings" },
-  { href: "/book", label: "Booking site" },
+];
+
+const more = [
+  { href: "/forms", label: "Forms/SOAPs" },
+  { href: "/billing", label: "Invoices, refunds, IOUs" },
+  { href: "/growth", label: "Gift cards & memberships" },
+  { href: "/imports", label: "Import & cleanup" },
+  { href: "/settings/services", label: "Service menu" },
+  { href: "/messaging", label: "Messaging/billing" },
+  { href: "/payroll", label: "Payroll/time card" },
+  { href: "/assistants", label: "Assistance hub" },
 ];
 
 export default function AdminTopNav({ session, active = "" }: { session: Session; active?: string }) {
@@ -26,6 +36,15 @@ export default function AdminTopNav({ session, active = "" }: { session: Session
               </Link>
             );
           })}
+          <details className="group relative shrink-0">
+            <summary className="cursor-pointer list-none whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium hover:bg-white/10">More</summary>
+            <div className="absolute right-0 top-11 z-40 w-64 overflow-hidden rounded-lg border border-black/10 bg-white py-2 text-[#30302f] shadow-xl">
+              {more.map((item) => <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm hover:bg-black/[0.04]">{item.label}</Link>)}
+            </div>
+          </details>
+          <Link href="/book" className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ${active.toLowerCase().startsWith("booking") ? "bg-white/15" : "hover:bg-white/10"}`}>
+            Booking site
+          </Link>
         </nav>
         <Link href="/settings/stripe" className="hidden shrink-0 rounded-md bg-white px-3 py-2 text-xs font-medium text-[#30302f] sm:block">Connect Stripe</Link>
         <div className="hidden max-w-[180px] truncate text-sm lg:block">{session.salon || "Bare Studios"}</div>

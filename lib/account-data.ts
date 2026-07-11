@@ -44,9 +44,11 @@ export const LOCATION_HEADERS = [
   "Location",
   "Address",
   "Phone",
+  "Hours",
   "Manager Email",
   "Share Availability",
   "Share Inventory",
+  "Notes",
   "Billing Status",
 ];
 export const BILLING_HEADERS = [
@@ -108,9 +110,11 @@ export type LocationRecord = {
   location: string;
   address: string;
   phone: string;
+  hours?: string;
   managerEmail: string;
   shareAvailability: string;
   shareInventory: string;
+  notes?: string;
   billingStatus: string;
 };
 
@@ -249,9 +253,11 @@ export async function listLocations(ownerEmail: string, salon: string): Promise<
       location: row.Location || row.Salon || salon,
       address: row.Address || "",
       phone: row.Phone || "",
+      hours: row.Hours || "",
       managerEmail: row["Manager Email"] || "",
       shareAvailability: row["Share Availability"] || "on",
       shareInventory: row["Share Inventory"] || "on",
+      notes: row.Notes || "",
       billingStatus: row["Billing Status"] || "included",
     }));
 }
@@ -264,9 +270,11 @@ export async function appendLocation(location: LocationRecord) {
     location.location,
     location.address,
     location.phone,
+    location.hours || "",
     normalizeEmail(location.managerEmail),
     location.shareAvailability,
     location.shareInventory,
+    location.notes || "",
     location.billingStatus || "included",
   ]);
 }

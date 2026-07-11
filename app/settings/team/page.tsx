@@ -34,6 +34,8 @@ export default async function TeamSettingsPage({
     "billing-cancelled": "Checkout cancelled.",
     "stripe-missing": "Stripe is not configured yet.",
     "price-missing": "Add the Stripe price ID before starting checkout.",
+    "location-saved": "Location details saved.",
+    "location-error": "Couldn't save that location yet.",
   };
 
   return (
@@ -176,18 +178,57 @@ export default async function TeamSettingsPage({
 
       <section className="mt-8 rounded-xl border border-border bg-surface p-6">
         <h2 className="font-serif text-2xl">Locations</h2>
-        <div className="mt-4 space-y-3">
-          <div className="rounded-md border border-border bg-surface-elevated p-4">
-            <p className="font-medium">{primaryLocation}</p>
-            <p className="mt-1 text-sm text-text-secondary">Primary location · included</p>
-          </div>
-          {locations.map((location) => (
-            <div key={`${location.location}-${location.managerEmail}`} className="rounded-md border border-border bg-surface-elevated p-4">
-              <p className="font-medium">{location.location}</p>
-              <p className="mt-1 text-sm text-text-secondary">
-                {location.billingStatus} · Availability sharing {location.shareAvailability} · Inventory sharing {location.shareInventory}
-              </p>
+        <p className="mt-2 text-sm text-text-secondary">Edit address, phone, hours, manager, and cross-location visibility for each location. The newest saved row is treated as the current location record.</p>
+        <div className="mt-4 space-y-4">
+          <form action="/api/location" method="POST" className="rounded-md border border-border bg-surface-elevated p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="font-medium">{primaryLocation}</p>
+              <span className="rounded-full bg-success/15 px-3 py-1 text-xs text-success">Primary location · included</span>
             </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <input className={inputClass} name="location" defaultValue={primaryLocation} aria-label="Location name" />
+              <input className={inputClass} name="phone" defaultValue={profile?.phone || ""} placeholder="Location phone" aria-label="Location phone" />
+              <input className={`${inputClass} sm:col-span-2`} name="address" defaultValue={profile?.address || ""} placeholder="Location address" aria-label="Location address" />
+              <input className={inputClass} name="hours" defaultValue="Mon-Sat 9 AM-7 PM" placeholder="Location hours" aria-label="Location hours" />
+              <input className={inputClass} name="managerEmail" placeholder="Manager email" aria-label="Manager email" />
+              <label className="flex items-center gap-2 rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-secondary">
+                <input type="checkbox" name="shareAvailability" value="on" defaultChecked /> Share availability across locations
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-secondary">
+                <input type="checkbox" name="shareInventory" value="on" defaultChecked /> Share inventory counts
+              </label>
+              <input type="hidden" name="billingStatus" value="included" />
+              <textarea className={`${inputClass} min-h-24 sm:col-span-2`} name="notes" placeholder="Internal location notes" aria-label="Location notes" />
+              <button className="rounded-sm bg-gradient-brand px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-white sm:col-span-2">
+                Save location details
+              </button>
+            </div>
+          </form>
+          {locations.map((location) => (
+            <form key={`${location.location}-${location.managerEmail}-${location.address}-${location.phone}`} action="/api/location" method="POST" className="rounded-md border border-border bg-surface-elevated p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-medium">{location.location}</p>
+                <span className="rounded-full bg-white px-3 py-1 text-xs text-text-secondary">{location.billingStatus}</span>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <input className={inputClass} name="location" defaultValue={location.location} aria-label="Location name" />
+                <input className={inputClass} name="phone" defaultValue={location.phone} placeholder="Location phone" aria-label="Location phone" />
+                <input className={`${inputClass} sm:col-span-2`} name="address" defaultValue={location.address} placeholder="Location address" aria-label="Location address" />
+                <input className={inputClass} name="hours" defaultValue={location.hours || ""} placeholder="Location hours" aria-label="Location hours" />
+                <input className={inputClass} name="managerEmail" defaultValue={location.managerEmail} placeholder="Manager email" aria-label="Manager email" />
+                <label className="flex items-center gap-2 rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-secondary">
+                  <input type="checkbox" name="shareAvailability" value="on" defaultChecked={location.shareAvailability !== "off"} /> Share availability across locations
+                </label>
+                <label className="flex items-center gap-2 rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-secondary">
+                  <input type="checkbox" name="shareInventory" value="on" defaultChecked={location.shareInventory !== "off"} /> Share inventory counts
+                </label>
+                <input type="hidden" name="billingStatus" value={location.billingStatus || "included"} />
+                <textarea className={`${inputClass} min-h-24 sm:col-span-2`} name="notes" defaultValue={location.notes || ""} placeholder="Internal location notes" aria-label="Location notes" />
+                <button className="rounded-sm bg-gradient-brand px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-white sm:col-span-2">
+                  Save location details
+                </button>
+              </div>
+            </form>
           ))}
         </div>
         <form action="/api/billing/checkout" method="POST" className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">

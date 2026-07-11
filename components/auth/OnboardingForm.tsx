@@ -8,8 +8,8 @@ const featureOptions = [
   "Inventory tracking and reorder assistant",
   "Social media and marketing scheduling",
   "Reviews assistant",
-  "Financial reports and payroll visibility",
   "Team scheduling and multi-location visibility",
+  "Financial reports and payroll visibility",
 ];
 
 const inputClass =
@@ -102,7 +102,7 @@ export default function OnboardingForm({ defaultBusinessName }: { defaultBusines
       <div>
         <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-text-muted">What are you most excited for?</p>
         <div className="grid gap-2 sm:grid-cols-2">
-          {["All of the above", ...featureOptions].map((feature) => (
+          {[...featureOptions, "All of the above"].map((feature) => (
             <label key={feature} className="flex items-start gap-3 rounded-md border border-border bg-white p-3 text-sm text-text-secondary">
               <input className="mt-1" type="checkbox" checked={features.includes(feature)} onChange={() => toggleFeature(feature)} />
               <span>{feature}</span>

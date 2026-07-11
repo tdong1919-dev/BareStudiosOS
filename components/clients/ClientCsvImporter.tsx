@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type ParsedClient = {
@@ -14,7 +14,26 @@ type ParsedClient = {
 
 const defaultButtonClass =
   "rounded-sm border border-border bg-surface-elevated px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-linen";
-const IMPORT_BATCH_SIZE = 5;
+const IMPORT_BATCH_SIZE = 10;
+const DB_NAME = "bare-studios-imports";
+const DB_VERSION = 1;
+const ROW_STORE = "clientRows";
+const META_STORE = "importMeta";
+const ACTIVE_IMPORT_KEY = "active";
+
+type ImportMeta = {
+  id: string;
+  fileName: string;
+  total: number;
+  nextIndex: number;
+  imported: number;
+  skipped: number;
+  createdAt: string;
+};
+
+type StoredClient = ParsedClient & {
+  index: number;
+};
 
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
@@ -137,6 +156,136 @@ async function readSpreadsheetRows(file: File) {
   return parseCsv(await file.text());
 }
 
+function openImportDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(ROW_STORE)) db.createObjectStore(ROW_STORE, { keyPath: "index" });
+      if (!db.objectStoreNames.contains(META_STORE)) db.createObjectStore(META_STORE, { keyPath: "id" });
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveImportQueue(clients: ParsedClient[], fileName: string): Promise<ImportMeta> {
+  const db = await openImportDb();
+  const meta: ImportMeta = {
+    id: ACTIVE_IMPORT_KEY,
+    fileName,
+    total: clients.length,
+    nextIndex: 0,
+    imported: 0,
+    skipped: 0,
+    createdAt: new Date().toISOString(),
+  };
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([ROW_STORE, META_STORE], "readwrite");
+    const rows = tx.objectStore(ROW_STORE);
+    const metas = tx.objectStore(META_STORE);
+    rows.clear();
+    metas.clear();
+    metas.put(meta);
+    clients.forEach((client, index) => rows.put({ ...client, index }));
+    tx.oncomplete = () => {
+      db.close();
+      resolve(meta);
+    };
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function getImportMeta(): Promise<ImportMeta | null> {
+  const db = await openImportDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(META_STORE, "readonly");
+    const request = tx.objectStore(META_STORE).get(ACTIVE_IMPORT_KEY);
+    request.onsuccess = () => {
+      db.close();
+      resolve((request.result as ImportMeta | undefined) || null);
+    };
+    request.onerror = () => {
+      db.close();
+      reject(request.error);
+    };
+  });
+}
+
+async function setImportMeta(meta: ImportMeta) {
+  const db = await openImportDb();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(META_STORE, "readwrite");
+    tx.objectStore(META_STORE).put(meta);
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function getImportBatch(startIndex: number, batchSize: number): Promise<ParsedClient[]> {
+  const db = await openImportDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ROW_STORE, "readonly");
+    const range = IDBKeyRange.bound(startIndex, startIndex + batchSize - 1);
+    const request = tx.objectStore(ROW_STORE).openCursor(range);
+    const rows: ParsedClient[] = [];
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) return;
+      const stored = cursor.value as StoredClient;
+      const client: ParsedClient = {
+        name: stored.name,
+        email: stored.email,
+        phone: stored.phone,
+        lastVisit: stored.lastVisit,
+        service: stored.service,
+        intervalDays: stored.intervalDays,
+      };
+      rows.push(client);
+      cursor.continue();
+    };
+    tx.oncomplete = () => {
+      db.close();
+      resolve(rows);
+    };
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function clearImportQueue() {
+  const db = await openImportDb();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction([ROW_STORE, META_STORE], "readwrite");
+    tx.objectStore(ROW_STORE).clear();
+    tx.objectStore(META_STORE).clear();
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export default function ClientCsvImporter({
   className = defaultButtonClass,
   label = "Batch Import CSV/XLSX",
@@ -149,27 +298,31 @@ export default function ClientCsvImporter({
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [savedImport, setSavedImport] = useState<ImportMeta | null>(null);
 
-  async function importFile(file: File) {
+  useEffect(() => {
+    void getImportMeta().then(setSavedImport).catch(() => setSavedImport(null));
+  }, []);
+
+  async function processQueue(startingMeta?: ImportMeta) {
     setBusy(true);
     setError("");
-    setStatus(`Reading ${file.name}...`);
 
     try {
-      const clients = mapRows(await readSpreadsheetRows(file));
-      if (clients.length === 0) {
+      let meta = startingMeta || (await getImportMeta());
+      if (!meta) {
         setStatus("");
-        setError("No clients were found. Make sure the file has columns like First Name, Last Name, Email, Mobile, Phone, Last Visited, or Service.");
+        setError("No staged import was found. Choose the file again.");
         return;
       }
 
-      let imported = 0;
-      let skipped = 0;
-      const largeImportNote = clients.length > 250 ? " This large Vagaro file may take a few minutes." : "";
+      while (meta.nextIndex < meta.total) {
+        const batch = await getImportBatch(meta.nextIndex, IMPORT_BATCH_SIZE);
+        if (batch.length === 0) break;
 
-      for (let index = 0; index < clients.length; index += IMPORT_BATCH_SIZE) {
-        const batch = clients.slice(index, index + IMPORT_BATCH_SIZE);
-        setStatus(`Importing ${Math.min(index + batch.length, clients.length)} of ${clients.length} clients...${largeImportNote}`);
+        const nextCount = Math.min(meta.nextIndex + batch.length, meta.total);
+        const largeImportNote = meta.total > 250 ? " You can leave this page open; if it pauses, resume later." : "";
+        setStatus(`Importing ${nextCount} of ${meta.total} clients from ${meta.fileName}...${largeImportNote}`);
 
         const res = await fetch("/api/client/import", {
           method: "POST",
@@ -185,23 +338,58 @@ export default function ClientCsvImporter({
         }
 
         if (!res.ok) {
-          setStatus(imported ? `Imported ${imported} before the import stopped.` : "");
-          setError(String(json.error || responseText || `The file could not be imported. Server returned ${res.status}.`));
+          setSavedImport(meta);
+          setError(String(json.error || responseText || `Import paused. Server returned ${res.status}.`));
           return;
         }
 
-        imported += Number(json.imported || 0);
-        skipped += Number(json.skipped || 0);
+        meta = {
+          ...meta,
+          nextIndex: nextCount,
+          imported: meta.imported + Number(json.imported || 0),
+          skipped: meta.skipped + Number(json.skipped || 0),
+        };
+        await setImportMeta(meta);
+        setSavedImport(meta);
 
         if (json.error) {
-          setStatus(`Imported ${imported} before the import stopped.`);
           setError(String(json.error));
           return;
         }
+
+        await wait(250);
       }
 
-      setStatus(`Imported ${imported} client${imported === 1 ? "" : "s"}.${skipped ? ` Skipped ${skipped}.` : ""}`);
+      await clearImportQueue();
+      setSavedImport(null);
+      setStatus(`Imported ${meta.imported} client${meta.imported === 1 ? "" : "s"}.${meta.skipped ? ` Skipped ${meta.skipped}.` : ""}`);
       router.refresh();
+    } catch {
+      const meta = await getImportMeta().catch(() => null);
+      setSavedImport(meta);
+      setError("Import paused. Your staged file is still saved here, so click Resume import to keep going.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function importFile(file: File) {
+    setBusy(true);
+    setError("");
+    setStatus(`Reading ${file.name}...`);
+
+    try {
+      const clients = mapRows(await readSpreadsheetRows(file));
+      if (clients.length === 0) {
+        setStatus("");
+        setError("No clients were found. Make sure the file has columns like First Name, Last Name, Email, Mobile, Phone, Last Visited, or Service.");
+        return;
+      }
+
+      setStatus(`Staging ${clients.length} clients from ${file.name}...`);
+      const meta = await saveImportQueue(clients, file.name);
+      setSavedImport(meta);
+      await processQueue(meta);
     } catch {
       setStatus("");
       setError("Something went wrong while reading that file. Try exporting it again as CSV or XLSX.");
@@ -213,6 +401,7 @@ export default function ClientCsvImporter({
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
       <label className={`inline-flex cursor-pointer justify-center ${className} ${busy ? "pointer-events-none opacity-60" : ""}`}>
         {busy ? "Importing..." : label}
         <input
@@ -227,6 +416,32 @@ export default function ClientCsvImporter({
           }}
         />
       </label>
+      {savedImport && !busy && (
+        <>
+          <button type="button" onClick={() => void processQueue(savedImport)} className={className}>
+            Resume import
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              void clearImportQueue().then(() => {
+                setSavedImport(null);
+                setStatus("");
+                setError("");
+              });
+            }}
+            className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-secondary"
+          >
+            Clear import
+          </button>
+        </>
+      )}
+      </div>
+      {savedImport && !busy && (
+        <p className="max-w-md text-xs text-text-muted">
+          Staged import: {savedImport.nextIndex} of {savedImport.total} processed from {savedImport.fileName}.
+        </p>
+      )}
       {status && <p className="max-w-xs text-xs text-success">{status}</p>}
       {error && <p className="max-w-xs text-xs text-error">{error}</p>}
     </div>

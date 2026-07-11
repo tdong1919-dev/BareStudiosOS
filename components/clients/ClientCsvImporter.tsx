@@ -14,6 +14,7 @@ type ParsedClient = {
 
 const defaultButtonClass =
   "rounded-sm border border-border bg-surface-elevated px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-linen";
+const IMPORT_BATCH_SIZE = 100;
 
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
@@ -65,11 +66,45 @@ function pick(row: Record<string, string>, keys: string[]) {
   return keys.map((key) => row[key]).find(Boolean) || "";
 }
 
+function findHeaderIndex(rows: string[][]) {
+  let bestIndex = -1;
+  let bestScore = 0;
+  const knownHeaders = new Set([
+    "name",
+    "clientname",
+    "customername",
+    "fullname",
+    "firstname",
+    "lastname",
+    "email",
+    "emailaddress",
+    "phone",
+    "phonenumber",
+    "mobile",
+    "cell",
+    "lastvisit",
+    "lastvisited",
+    "lastappointment",
+    "service",
+  ]);
+
+  rows.slice(0, 30).forEach((row, index) => {
+    const score = row.map(keyFor).filter((cell) => knownHeaders.has(cell)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestIndex = index;
+    }
+  });
+
+  return bestScore >= 2 ? bestIndex : 0;
+}
+
 function mapRows(rows: string[][]): ParsedClient[] {
   if (rows.length < 2) return [];
-  const headers = rows[0].map(keyFor);
+  const headerIndex = findHeaderIndex(rows);
+  const headers = rows[headerIndex].map(keyFor);
 
-  return rows.slice(1).map((cells) => {
+  return rows.slice(headerIndex + 1).map((cells) => {
     const row: Record<string, string> = {};
     headers.forEach((header, index) => {
       row[header] = (cells[index] || "").trim();
@@ -90,9 +125,21 @@ function mapRows(rows: string[][]): ParsedClient[] {
   }).filter((row) => row.name || row.email || row.phone);
 }
 
+async function readSpreadsheetRows(file: File) {
+  const lowerName = file.name.toLowerCase();
+  if (lowerName.endsWith(".xlsx") || lowerName.endsWith(".xls")) {
+    const XLSX = await import("xlsx");
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    return XLSX.utils.sheet_to_json<string[]>(firstSheet, { header: 1, raw: false, defval: "" });
+  }
+
+  return parseCsv(await file.text());
+}
+
 export default function ClientCsvImporter({
   className = defaultButtonClass,
-  label = "Batch Import CSV",
+  label = "Batch Import CSV/XLSX",
 }: {
   className?: string;
   label?: string;
@@ -109,32 +156,48 @@ export default function ClientCsvImporter({
     setStatus(`Reading ${file.name}...`);
 
     try {
-      const clients = mapRows(parseCsv(await file.text()));
+      const clients = mapRows(await readSpreadsheetRows(file));
       if (clients.length === 0) {
         setStatus("");
-        setError("No clients were found. Make sure the CSV has headers like Name, Email, Phone, Last Visit, or Service.");
+        setError("No clients were found. Make sure the file has columns like First Name, Last Name, Email, Mobile, Phone, Last Visited, or Service.");
         return;
       }
 
-      setStatus(`Importing ${clients.length} client${clients.length === 1 ? "" : "s"}...`);
-      const res = await fetch("/api/client/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows: clients }),
-      });
-      const json = await res.json().catch(() => ({}));
+      let imported = 0;
+      let skipped = 0;
 
-      if (!res.ok) {
-        setStatus("");
-        setError(json.error || "The CSV could not be imported.");
-        return;
+      for (let index = 0; index < clients.length; index += IMPORT_BATCH_SIZE) {
+        const batch = clients.slice(index, index + IMPORT_BATCH_SIZE);
+        setStatus(`Importing ${Math.min(index + batch.length, clients.length)} of ${clients.length} clients...`);
+
+        const res = await fetch("/api/client/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rows: batch }),
+        });
+        const json = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          setStatus(imported ? `Imported ${imported} before the import stopped.` : "");
+          setError(json.error || "The file could not be imported.");
+          return;
+        }
+
+        imported += Number(json.imported || 0);
+        skipped += Number(json.skipped || 0);
+
+        if (json.error) {
+          setStatus(`Imported ${imported} before the import stopped.`);
+          setError(json.error);
+          return;
+        }
       }
 
-      setStatus(`Imported ${json.imported || 0} client${json.imported === 1 ? "" : "s"}.${json.skipped ? ` Skipped ${json.skipped}.` : ""}`);
+      setStatus(`Imported ${imported} client${imported === 1 ? "" : "s"}.${skipped ? ` Skipped ${skipped}.` : ""}`);
       router.refresh();
     } catch {
       setStatus("");
-      setError("Something went wrong while reading that CSV. Try exporting it again as a standard CSV file.");
+      setError("Something went wrong while reading that file. Try exporting it again as CSV or XLSX.");
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -148,7 +211,7 @@ export default function ClientCsvImporter({
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,text/csv"
+          accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
           className="sr-only"
           aria-label={label}
           onChange={(event) => {

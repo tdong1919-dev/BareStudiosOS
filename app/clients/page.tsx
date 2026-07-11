@@ -27,6 +27,8 @@ const reminderRules = [
   { match: ["brow", "wax", "lamination"], text: "Confirm preferred shape notes and suggest a 4-6 week touch-up." },
 ];
 
+const actionButtonClass = "rounded-sm border border-border bg-surface-elevated px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-linen";
+
 function reminderFor(service: string) {
   const normalized = service.toLowerCase();
   return reminderRules.find((rule) => rule.match.some((word) => normalized.includes(word)))?.text || "Review service history and recommend the next best booking before checkout.";
@@ -52,13 +54,12 @@ export default async function ClientsPage() {
       wide
     >
       <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/dashboard" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Back to calendar</Link>
-        <label className="cursor-pointer rounded-sm bg-gradient-brand px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-white">
+        <label className={`cursor-pointer ${actionButtonClass}`}>
           Batch Import CSV
           <input type="file" accept=".csv" className="sr-only" aria-label="Batch import customer CSV" />
         </label>
-        <Link href="/settings/stripe" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Stripe card settings</Link>
-        <Link href="/settings/notifications" className="rounded-sm border border-border px-5 py-3 text-[12px] uppercase tracking-[0.14em]">Notification settings</Link>
+        <Link href="/settings/stripe" className={actionButtonClass}>Stripe card settings</Link>
+        <Link href="/settings/notifications" className={actionButtonClass}>Notification settings</Link>
       </div>
 
       <section className="mb-8">

@@ -14,6 +14,7 @@ const BOOKING_HEADERS = [
   "Status",
   "Source",
 ];
+const CLIENT_HEADERS = ["Added", "Salon", "Name", "Email", "Phone", "Last visit", "Service", "Interval days", "Source"];
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,18 @@ export async function POST(request: NextRequest) {
   if (!saved.ok) {
     return NextResponse.json({ error: "Couldn't save the booking request. Check the database connection." }, { status: 502 });
   }
+
+  await appendSheetRow("Clients", CLIENT_HEADERS, [
+    new Date().toISOString().slice(0, 10),
+    "Bare Studios",
+    name,
+    email,
+    phone,
+    preferredDate,
+    service,
+    "",
+    "online-booking",
+  ]);
 
   return NextResponse.json({ ok: true });
 }

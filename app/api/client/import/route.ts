@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { appendSheetRows } from "@/lib/sheets";
 
-const HEADERS = ["Added", "Salon", "Name", "Email", "Phone", "Last visit", "Service", "Interval days"];
+const HEADERS = ["Added", "Salon", "Name", "Email", "Phone", "Last visit", "Service", "Interval days", "Source"];
 const MAX_IMPORT_ROWS = 100;
 
 type ImportClient = {
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
         String(row.lastVisit || "").trim(),
         String(row.service || "").trim(),
         String(row.intervalDays || "").trim(),
+        "batch-import",
       ]);
     }
   }
@@ -76,5 +77,5 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true, imported: rowsToSave.length, skipped });
+  return NextResponse.json({ ok: true, imported: rowsToSave.length, skipped, refreshCustomers: true });
 }

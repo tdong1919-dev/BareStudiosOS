@@ -3,6 +3,7 @@ import Link from "next/link";
 import PageShell from "@/components/marketing/PageShell";
 import ClientAdder from "@/components/agents/ClientAdder";
 import ClientCsvImporter from "@/components/clients/ClientCsvImporter";
+import ClientDirectory from "@/components/clients/ClientDirectory";
 import { readSheetTab } from "@/lib/gviz";
 import { overdueClients } from "@/lib/reengagement";
 import { requireSession } from "@/lib/auth";
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   description: "Client profiles, import tools, spend history, notification preferences, and rebooking reminders.",
 };
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const sampleClients: Record<string, string>[] = [
   { Name: "Jasmine Rivera", Email: "jasmine@example.com", Phone: "(443) 555-0142", "Last visit": "2026-07-02", Service: "Classic lash fill", "Interval days": "21", Spent: "$1,240", SMS: "on", EmailOptIn: "on" },
@@ -20,24 +22,7 @@ const sampleClients: Record<string, string>[] = [
   { Name: "John Brooks", Email: "john@example.com", Phone: "(443) 555-0199", "Last visit": "2026-03-10", Service: "Barbering", "Interval days": "30", Spent: "$410", SMS: "off", EmailOptIn: "on" },
 ];
 
-
-const reminderRules = [
-  { match: ["lash", "fill", "extension"], text: "Recommend lash cleanser today and pre-book the next fill before they leave." },
-  { match: ["facial", "skin", "dermaplaning", "peel"], text: "Check skin goals, recommend SPF or serum, and schedule the next facial window." },
-  { match: ["barber", "hair", "cut"], text: "Ask about product needs and offer the next maintenance cut before checkout." },
-  { match: ["brow", "wax", "lamination"], text: "Confirm preferred shape notes and suggest a 4-6 week touch-up." },
-];
-
 const actionButtonClass = "rounded-sm border border-border bg-surface-elevated px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-text-primary transition-colors hover:bg-linen";
-
-function reminderFor(service: string) {
-  const normalized = service.toLowerCase();
-  return reminderRules.find((rule) => rule.match.some((word) => normalized.includes(word)))?.text || "Review service history and recommend the next best booking before checkout.";
-}
-
-function money(row: Record<string, string>, index: number) {
-  return row.Spent || row["Total Spent"] || row["Lifetime Spend"] || sampleClients[index % sampleClients.length].Spent;
-}
 
 export default async function ClientsPage() {
   const session = await requireSession();
@@ -72,39 +57,7 @@ export default async function ClientsPage() {
         </div>
       </section>
 
-      <section className="mb-8">
-        <h2 className="mb-4 font-serif text-2xl font-medium">Client list</h2>
-        <div className="grid gap-4 xl:grid-cols-3">
-          {rows.slice(0, 12).map((client, index) => (
-            <article key={`${client.Name}-${index}`} className="rounded-xl border border-border bg-surface p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-serif text-2xl font-medium">{client.Name || "Client"}</p>
-                  <p className="mt-1 text-sm text-text-secondary">{client.Phone || "No phone"} · {client.Email || "No email"}</p>
-                </div>
-                <span className="rounded-full bg-success/15 px-3 py-1 text-[11px] text-success">active</span>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-md border border-border bg-white p-3"><p className="text-text-muted">Spent</p><p className="font-medium">{money(client, index)}</p></div>
-                <div className="rounded-md border border-border bg-white p-3"><p className="text-text-muted">Last visit</p><p className="font-medium">{client["Last visit"] || "Not imported"}</p></div>
-                <div className="rounded-md border border-border bg-white p-3"><p className="text-text-muted">Last service</p><p className="font-medium">{client.Service || "Not imported"}</p></div>
-                <div className="rounded-md border border-border bg-white p-3"><p className="text-text-muted">Card on file</p><p className="font-medium">Stripe setup</p></div>
-              </div>
-
-              <div className="mt-5 grid gap-2 text-sm">
-                <label className="flex items-center justify-between rounded-md border border-border bg-white px-3 py-2">SMS notifications <input type="checkbox" defaultChecked={(client.SMS || "on") !== "off"} /></label>
-                <label className="flex items-center justify-between rounded-md border border-border bg-white px-3 py-2">Email notifications <input type="checkbox" defaultChecked={(client.EmailOptIn || "on") !== "off"} /></label>
-              </div>
-
-              <div className="mt-5 rounded-md border border-border bg-surface-elevated p-4 text-sm leading-relaxed text-text-secondary">
-                <p className="font-medium text-text-primary">Reminder</p>
-                <p className="mt-1">{reminderFor(client.Service || "")}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <ClientDirectory rows={rows} />
 
       <h2 className="mb-3 font-serif text-2xl font-medium">Add a client manually</h2>
       <ClientAdder />

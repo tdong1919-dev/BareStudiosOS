@@ -1,5 +1,5 @@
 const DEFAULT_SHEETS_WEBHOOK_URL =
-  "https://script.google.com/macros/s/AKfycbw2-L1HGyjlHtPjaFzcLAAAuTjWC-KFxm6CH67EUGSpopAaXCcPS37tTmC76OzWByFSAQ/exec";
+  "https://script.google.com/macros/s/AKfycbwSz3AS74vdNWRuskIPyCGC39ZZY4al1W4jDvM45vzMv428T2-9Dzxk9xbr1kcRdon4fg/exec";
 
 export function getSheetsWebhookUrl() {
   return process.env.SHEETS_WEBHOOK_URL || DEFAULT_SHEETS_WEBHOOK_URL;

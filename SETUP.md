@@ -12,7 +12,7 @@ Set these in `.env.local` (local) **and** in your Netlify site (Site configurati
 | Variable | Powers | Where to get it | Status |
 |---|---|---|---|
 | `ANTHROPIC_API_KEY` | Financial agent, inventory reorder search, industry intelligence | [console.anthropic.com](https://console.anthropic.com) (pay-as-you-go) | **NEEDED** |
-| `SHEETS_WEBHOOK_URL` | All sheet writes (leads, payroll, complaints, inventory, promotions, reviews, clients) | `https://script.google.com/macros/s/AKfycbw2-L1HGyjlHtPjaFzcLAAAuTjWC-KFxm6CH67EUGSpopAaXCcPS37tTmC76OzWByFSAQ/exec` | ✅ ready |
+| `SHEETS_WEBHOOK_URL` | All sheet writes (leads, payroll, complaints, inventory, promotions, reviews, clients) | `https://script.google.com/macros/s/AKfycbwSz3AS74vdNWRuskIPyCGC39ZZY4al1W4jDvM45vzMv428T2-9Dzxk9xbr1kcRdon4fg/exec` | ✅ ready |
 | `SHEETS_SHEET_ID` | Sheet **reads** (reviews hub, complaint re-ping, client re-engagement) | the long string between `/d/` and `/edit` in your sheet URL | **NEEDED for read features** |
 | `SHEETS_WEBHOOK_SECRET` | (optional) reject unknown callers to the Apps Script | any random string (also set in the script) | optional |
 | `CRON_SECRET` | Protects `/api/complaint/reping` and `/api/reengagement/digest` | any random string | **NEEDED for crons** |
@@ -34,7 +34,7 @@ Set these in `.env.local` (local) **and** in your Netlify site (Site configurati
 
 ## 2. Google Sheet — one-time
 
-1. **Apps Script deployment is ready.** Use this `/exec` URL for Netlify: `https://script.google.com/macros/s/AKfycbw2-L1HGyjlHtPjaFzcLAAAuTjWC-KFxm6CH67EUGSpopAaXCcPS37tTmC76OzWByFSAQ/exec`. The script in `docs/sheets-webhook.gs` was updated
+1. **Apps Script deployment is ready.** Use this `/exec` URL for Netlify: `https://script.google.com/macros/s/AKfycbwSz3AS74vdNWRuskIPyCGC39ZZY4al1W4jDvM45vzMv428T2-9Dzxk9xbr1kcRdon4fg/exec`. The script in `docs/sheets-webhook.gs` was updated
    to support structured tab writes (`{ tab, headers, row }`) used by the financial,
    inventory, promotions, reviews, and client features. In the Apps Script editor:
    paste the latest `docs/sheets-webhook.gs`, then **Deploy → Manage deployments →

@@ -1,3 +1,10 @@
+const DEFAULT_SHEETS_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbw2-L1HGyjlHtPjaFzcLAAAuTjWC-KFxm6CH67EUGSpopAaXCcPS37tTmC76OzWByFSAQ/exec";
+
+export function getSheetsWebhookUrl() {
+  return process.env.SHEETS_WEBHOOK_URL || DEFAULT_SHEETS_WEBHOOK_URL;
+}
+
 /**
  * Append a row to a named tab in the salon's Google Sheet via the Apps Script
  * webhook. We don't follow the Apps Script 302 (its content echo is flaky on
@@ -9,8 +16,7 @@ export async function appendSheetRow(
   headers: string[],
   row: (string | number)[],
 ): Promise<{ ok: boolean; error?: string }> {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return { ok: false, error: "SHEETS_WEBHOOK_URL not set" };
+  const url = getSheetsWebhookUrl();
   try {
     const res = await fetch(url, {
       method: "POST",

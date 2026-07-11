@@ -8,6 +8,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { sendHelpEmail } from '@/lib/notify'
+import { getSheetsWebhookUrl } from '@/lib/sheets'
 
 type SinkResult = { ok: boolean; skipped?: boolean; error?: string }
 
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
   // accounts and we don't need the body — so we don't follow the redirect; the
   // 302 itself confirms doPost executed and appended the row.
   let sheet: SinkResult = { ok: false, skipped: true }
-  const webhook = process.env.SHEETS_WEBHOOK_URL
+  const webhook = getSheetsWebhookUrl()
   if (webhook) {
     try {
       const res = await fetch(webhook, {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
   // Captured as long as at least one sink accepted the lead.
   if (!sheet.ok && !notify.ok) {
     return NextResponse.json(
-      { error: 'Lead could not be saved — no storage configured. Set SHEETS_WEBHOOK_URL or RESEND_API_KEY.' },
+      { error: 'Lead could not be saved. Check the Google Sheets webhook or Resend configuration.' },
       { status: 502 },
     )
   }

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const email = normalizeEmail(body.email ?? "");
   const password = String(body.password ?? "");
-  const businessName = String(body.businessName ?? "").trim();
+  const businessName = String(body.businessName ?? "").trim() || "Bare Studios";
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
@@ -20,10 +20,6 @@ export async function POST(request: NextRequest) {
   if (password.length < 8) {
     return NextResponse.json({ error: "Create a password with at least 8 characters." }, { status: 400 });
   }
-  if (!businessName) {
-    return NextResponse.json({ error: "Enter your business name." }, { status: 400 });
-  }
-
   const existingCredential = await findCredential(email);
   if (existingCredential?.passwordHash) {
     return NextResponse.json({ error: "This email already has a password. Sign in instead." }, { status: 409 });

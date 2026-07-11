@@ -3,8 +3,8 @@ import PageShell from "@/components/marketing/PageShell";
 import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Sign in — Bare Studios OS",
-  description: "Secure account access for Bare Studios OS.",
+  title: "Sign in to Bare Studios",
+  description: "Secure account access for Bare Studios.",
 };
 
 export default async function LoginPage({
@@ -17,7 +17,7 @@ export default async function LoginPage({
   return (
     <PageShell
       eyebrow="Account"
-      title="Sign in to Bare Studios OS."
+      title="Sign in to Bare Studios."
       intro="Run booking, payments, clients, team members, inventory, and assistants from one place. Create a password once, then use it each time you come back."
       note="First time? Create your account, then complete business setup before dashboard access."
     >

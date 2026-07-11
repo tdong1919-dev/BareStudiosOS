@@ -93,11 +93,6 @@ export default async function TeamSettingsPage({
           <form action="/api/team/member" method="POST" className="mt-5 grid gap-3 sm:grid-cols-2">
             <input className={inputClass} name="name" placeholder="Team member name" aria-label="Team member name" />
             <input className={inputClass} name="email" type="email" placeholder="Email" aria-label="Team member email" />
-            <select className={inputClass} name="role" aria-label="Role" defaultValue="Team member">
-              <option>Owner</option>
-              <option>Manager</option>
-              <option>Team member</option>
-            </select>
             <select className={inputClass} name="accessLevel" aria-label="Access level" defaultValue="Team member">
               <option>Owner</option>
               <option>Manager</option>

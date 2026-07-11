@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const credential = await findCredential(email);
   if (!credential?.passwordHash) {
-    return NextResponse.json({ error: "No password found for this email. Create your account first." }, { status: 401 });
+    return NextResponse.json({ error: "No password is saved for this email yet. Choose Create account to set your password." }, { status: 401 });
   }
   if (credential.status.toLowerCase() !== "active" || !verifyPassword(password, credential.passwordHash)) {
     return NextResponse.json({ error: "Email or password is incorrect." }, { status: 401 });

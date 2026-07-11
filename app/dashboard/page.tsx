@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdminTopNav from "@/components/app/AdminTopNav";
+import InteractiveCalendar from "@/components/dashboard/InteractiveCalendar";
 import { requireSession } from "@/lib/auth";
 import { getBusinessProfile, listLocations } from "@/lib/account-data";
 import { readSheetTab } from "@/lib/gviz";
@@ -11,14 +12,6 @@ export const metadata: Metadata = {
 
 
 const staff = ["Ciara", "Na", "Andy", "Cindy"];
-const week = ["Mon 6", "Tue 7", "Wed 8", "Thu 9", "Fri 10", "Sat 11", "Sun 12"];
-const times = ["7 AM", "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM", "12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM"];
-const appointments = [
-  { day: 1, row: 1, title: "Classic fill", client: "Jasmine R.", staff: "Na", color: "bg-[#d9eadf]" },
-  { day: 2, row: 3, title: "Custom facial", client: "Sandra M.", staff: "Ciara", color: "bg-[#ead9c3]" },
-  { day: 4, row: 5, title: "Barber consult", client: "John B.", staff: "Andy", color: "bg-[#d8e3ef]" },
-  { day: 6, row: 2, title: "Lash lift + tint", client: "Maya L.", staff: "Ciara", color: "bg-[#eadce7]" },
-];
 
 function monthDays() {
   return [28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1];
@@ -96,54 +89,7 @@ export default async function DashboardPage() {
           </div>
         </aside>
 
-        <section className="overflow-hidden bg-white">
-          <div className="flex flex-col gap-3 border-b border-border px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <button className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white">Today</button>
-              <button className="rounded-md border border-border px-3 py-2 text-sm">‹</button>
-              <button className="rounded-md border border-border px-3 py-2 text-sm">›</button>
-              <h2 className="text-lg font-semibold">Jul 6, 2026 - Jul 12, 2026</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/clients" className="rounded-md border border-border px-4 py-2 text-sm">Customers: {clients.length}</Link>
-              <Link href="/dashboard" className="rounded-md border border-border px-4 py-2 text-sm">Week</Link>
-              <Link href="/book" className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white">Add appointment</Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 border-b border-border bg-[#fbfaf7] text-sm sm:grid-cols-4">
-            <div className="border-r border-border p-3"><strong>{openBookings}</strong><span className="ml-2 text-text-secondary">booking requests</span></div>
-            <div className="border-r border-border p-3"><strong>{newConcierge}</strong><span className="ml-2 text-text-secondary">inbox alerts</span></div>
-            <div className="border-r border-border p-3"><strong>{inventory.length}</strong><span className="ml-2 text-text-secondary">inventory flags</span></div>
-            <div className="p-3"><strong>Stripe</strong><span className="ml-2 text-text-secondary">ready to connect</span></div>
-          </div>
-
-          <div className="overflow-auto">
-            <div className="min-w-[980px]">
-              <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border bg-white text-center text-sm font-medium">
-                <div className="border-r border-border p-3" />
-                {week.map((day) => <div key={day} className="border-r border-border p-3 last:border-r-0">{day}</div>)}
-              </div>
-              <div className="relative grid grid-cols-[72px_repeat(7,1fr)]">
-                <div className="bg-[#fbfaf7]">
-                  {times.map((time) => <div key={time} className="h-20 border-b border-r border-border p-2 text-right text-xs font-medium text-text-secondary">{time}</div>)}
-                </div>
-                {week.map((day) => <div key={day} className="border-r border-border last:border-r-0">{times.map((time) => <div key={time} className="h-20 border-b border-border bg-white" />)}</div>)}
-                {appointments.map((appt) => (
-                  <div
-                    key={`${appt.day}-${appt.row}-${appt.client}`}
-                    className={`absolute rounded-md border border-black/10 p-2 text-xs shadow-sm ${appt.color}`}
-                    style={{ left: `calc(72px + ((100% - 72px) / 7) * ${appt.day} + 8px)`, top: `${appt.row * 80 + 12}px`, width: "calc((100% - 72px) / 7 - 16px)", height: "64px" }}
-                  >
-                    <p className="font-semibold">{appt.title}</p>
-                    <p>{appt.client}</p>
-                    <p className="text-text-secondary">{appt.staff}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <InteractiveCalendar clientsCount={clients.length} openBookings={openBookings} newConcierge={newConcierge} inventoryCount={inventory.length} />
       </div>
     </main>
   );

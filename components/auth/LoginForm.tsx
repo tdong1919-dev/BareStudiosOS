@@ -8,7 +8,6 @@ export default function LoginForm() {
   const [mode, setMode] = useState<"sign-in" | "create">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [businessName, setBusinessName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,17 +21,13 @@ export default function LoginForm() {
       setError("Enter your password.");
       return;
     }
-    if (mode === "create" && !businessName.trim()) {
-      setError("Enter your business name.");
-      return;
-    }
     setSubmitting(true);
     setError(null);
     try {
       const res = await fetch(mode === "create" ? "/api/auth/register" : "/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, businessName }),
+        body: JSON.stringify({ email, password, businessName: "Bare Studios" }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -85,15 +80,6 @@ export default function LoginForm() {
         aria-label="Password"
         minLength={mode === "create" ? 8 : undefined}
       />
-      {mode === "create" && (
-        <input
-          className={inputClass}
-          placeholder="Business name"
-          value={businessName}
-          onChange={(e) => setBusinessName(e.target.value)}
-          aria-label="Business name"
-        />
-      )}
       {error && <p className="text-sm text-error">{error}</p>}
       <button type="submit" disabled={submitting} className="w-full rounded-sm bg-gradient-brand px-6 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white disabled:opacity-50">
         {submitting ? "Working…" : mode === "create" ? "Create password and continue" : "Sign in"}

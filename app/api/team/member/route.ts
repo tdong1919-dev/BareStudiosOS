@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
   const form = await request.formData();
   const name = String(form.get("name") || "").trim();
   const email = String(form.get("email") || "").trim();
-  const role = String(form.get("role") || "Team member").trim();
-  const accessLevel = String(form.get("accessLevel") || role).trim();
+  const accessLevel = String(form.get("accessLevel") || "Team member").trim();
+  const role = accessLevel;
   const location = String(form.get("location") || "Primary").trim();
   const services = String(form.get("services") || "").trim();
   const availableHours = String(form.get("availableHours") || "").trim();

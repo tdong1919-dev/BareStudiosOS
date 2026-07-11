@@ -50,7 +50,7 @@ No database needed. Demo requests are appended to a Google Sheet:
 1. Open a Google Sheet → **Extensions → Apps Script**, paste `docs/sheets-webhook.gs`.
 2. **Deploy → New deployment → Web app** (execute as you, access "Anyone"), copy the
    `/exec` URL.
-3. Set `SHEETS_WEBHOOK_URL` (and optionally `SHEETS_WEBHOOK_SECRET`) in your env.
+3. Set `SHEETS_WEBHOOK_URL` to `https://script.google.com/macros/s/AKfycbw2-L1HGyjlHtPjaFzcLAAAuTjWC-KFxm6CH67EUGSpopAaXCcPS37tTmC76OzWByFSAQ/exec` (and optionally set `SHEETS_WEBHOOK_SECRET`) in your env.
 
 Leads are also emailed via Resend if `RESEND_API_KEY` is set. The legacy Supabase
 schema is kept in `supabase/migrations/` for reference if you later move to Postgres.

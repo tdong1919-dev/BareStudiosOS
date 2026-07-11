@@ -4,78 +4,85 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clientEmailKey, clientNameKey, clientPhoneKey, clientRowKey, type ClientRecord } from "@/lib/client-records";
 
-type DuplicateGroup = { id: string; reason: string; rows: ClientRecord[] };
+type MergePlan = {
+  id: string;
+  reason: "Same email" | "Same phone";
+  master: ClientRecord;
+  duplicates: ClientRecord[];
+};
 
-function findGroups(rows: ClientRecord[]) {
-  const sources = [
-    ["Same email", clientEmailKey],
-    ["Same phone", clientPhoneKey],
-    ["Similar name", clientNameKey],
-  ] as const;
-  const signatures = new Set<string>();
-  const groups: DuplicateGroup[] = [];
-  sources.forEach(([reason, getKey]) => {
-    const map = new Map<string, ClientRecord[]>();
-    rows.forEach((row) => {
-      const key = getKey(row);
-      if (key) map.set(key, [...(map.get(key) || []), row]);
-    });
-    map.forEach((items, key) => {
-      const unique = Array.from(new Map(items.map((row) => [clientRowKey(row), row])).values());
-      if (unique.length < 2) return;
-      const signature = unique.map(clientRowKey).sort().join("|");
-      if (signatures.has(signature)) return;
-      signatures.add(signature);
-      groups.push({ id: `${reason}-${key}`, reason, rows: unique });
-    });
-  });
-  return groups;
+function uniqueRows(rows: ClientRecord[]) {
+  return Array.from(new Map(rows.map((row) => [clientRowKey(row), row])).values());
 }
 
 function bestMaster(rows: ClientRecord[]) {
   return rows
     .map((row) => ({
       row,
-      score: (row.Name ? 2 : 0) + (row.Email ? 2 : 0) + (row.Phone ? 2 : 0) + (row.Service ? 1 : 0) + (row["Last visit"] ? 1 : 0),
+      score: (row.Name ? 2 : 0) + (row.Email ? 2 : 0) + (row.Phone ? 2 : 0) + (row.Service ? 1 : 0) + (row["Last visit"] ? 1 : 0) + (row.Source !== "batch-import" ? 1 : 0),
     }))
     .sort((a, b) => b.score - a.score)[0]?.row || rows[0];
 }
 
+function exactPlans(rows: ClientRecord[]) {
+  const plans: MergePlan[] = [];
+  const consumed = new Set<string>();
+  const sources = [
+    ["Same email", clientEmailKey],
+    ["Same phone", clientPhoneKey],
+  ] as const;
+
+  sources.forEach(([reason, getKey]) => {
+    const map = new Map<string, ClientRecord[]>();
+    rows.forEach((row) => {
+      if (consumed.has(clientRowKey(row))) return;
+      const key = getKey(row);
+      if (key) map.set(key, [...(map.get(key) || []), row]);
+    });
+
+    map.forEach((items, key) => {
+      const unique = uniqueRows(items);
+      if (unique.length < 2) return;
+      const master = bestMaster(unique);
+      const masterKey = clientRowKey(master);
+      const duplicates = unique.filter((row) => clientRowKey(row) !== masterKey);
+      duplicates.forEach((row) => consumed.add(clientRowKey(row)));
+      plans.push({ id: `${reason}-${key}`, reason, master, duplicates });
+    });
+  });
+
+  return plans;
+}
+
+function fuzzyGroups(rows: ClientRecord[], exactDuplicateKeys: Set<string>) {
+  const map = new Map<string, ClientRecord[]>();
+  rows.forEach((row) => {
+    if (exactDuplicateKeys.has(clientRowKey(row))) return;
+    const key = clientNameKey(row);
+    if (key) map.set(key, [...(map.get(key) || []), row]);
+  });
+  return Array.from(map.entries())
+    .map(([key, items]) => ({ id: key, rows: uniqueRows(items) }))
+    .filter((group) => group.rows.length > 1);
+}
+
 export default function DuplicateCleanup({ rows, mergedCount }: { rows: ClientRecord[]; mergedCount: number }) {
   const router = useRouter();
-  const groups = useMemo(() => findGroups(rows), [rows]);
-  const [groupId, setGroupId] = useState(groups[0]?.id || "");
-  const group = groups.find((item) => item.id === groupId) || groups[0];
-  const defaultMaster = group ? clientRowKey(bestMaster(group.rows)) : "";
-  const [masterKey, setMasterKey] = useState(defaultMaster);
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(group?.rows.map(clientRowKey).filter((key) => key !== defaultMaster) || []));
+  const plans = useMemo(() => exactPlans(rows), [rows]);
+  const duplicateKeys = useMemo(() => new Set(plans.flatMap((plan) => plan.duplicates.map(clientRowKey))), [plans]);
+  const fuzzy = useMemo(() => fuzzyGroups(rows, duplicateKeys), [duplicateKeys, rows]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
-  function selectGroup(id: string) {
-    const next = groups.find((item) => item.id === id);
-    setGroupId(id);
-    setMessage("");
-    if (!next) return;
-    const master = clientRowKey(bestMaster(next.rows));
-    setMasterKey(master);
-    setSelected(new Set(next.rows.map(clientRowKey).filter((key) => key !== master)));
-  }
+  const exactDuplicateCount = plans.reduce((count, plan) => count + plan.duplicates.length, 0);
+  const emailGroups = plans.filter((plan) => plan.reason === "Same email").length;
+  const phoneGroups = plans.filter((plan) => plan.reason === "Same phone").length;
 
-  function selectMaster(key: string) {
-    setMasterKey(key);
-    setSelected(new Set(group?.rows.map(clientRowKey).filter((rowKey) => rowKey !== key) || []));
-  }
-
-  async function mergeSelected() {
-    if (!group) return;
-    const duplicateKeys = Array.from(selected).filter((key) => key !== masterKey);
-    if (!masterKey || duplicateKeys.length === 0) {
-      setMessage("Choose a master client and at least one duplicate.");
+  async function mergeAllExact() {
+    if (plans.length === 0) {
+      setMessage("No exact email or phone duplicates to merge.");
       return;
     }
-    const master = group.rows.find((row) => clientRowKey(row) === masterKey);
-    const duplicates = group.rows.filter((row) => duplicateKeys.includes(clientRowKey(row)));
     setBusy(true);
     setMessage("");
     try {
@@ -83,21 +90,23 @@ export default function DuplicateCleanup({ rows, mergedCount }: { rows: ClientRe
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          masterKey,
-          masterName: master?.Name || master?.Email || "Client",
-          duplicateKeys,
-          duplicateNames: duplicates.map((row) => row.Name || row.Email || row.Phone || "Client"),
+          merges: plans.map((plan) => ({
+            masterKey: clientRowKey(plan.master),
+            masterName: plan.master.Name || plan.master.Email || plan.master.Phone || "Client",
+            duplicateKeys: plan.duplicates.map(clientRowKey),
+            duplicateNames: plan.duplicates.map((row) => row.Name || row.Email || row.Phone || "Client"),
+          })),
         }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage(json.error || "Couldn't save that merge.");
+        setMessage(json.error || "Could not merge duplicates.");
         return;
       }
-      setMessage(`Merged ${duplicateKeys.length} duplicate${duplicateKeys.length === 1 ? "" : "s"}.`);
+      setMessage(`Merged ${json.merged || exactDuplicateCount} duplicate client record${(json.merged || exactDuplicateCount) === 1 ? "" : "s"}.`);
       router.refresh();
     } catch {
-      setMessage("Couldn't save that merge.");
+      setMessage("Could not merge duplicates.");
     } finally {
       setBusy(false);
     }
@@ -109,75 +118,43 @@ export default function DuplicateCleanup({ rows, mergedCount }: { rows: ClientRe
         <div>
           <h2 className="font-serif text-2xl font-medium">Duplicate cleanup</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-            Review likely duplicates by matching email, phone, or similar name. Merging hides selected duplicate cards but keeps original rows in Google Sheets.
+            Exact email and phone matches can be merged all at once. Original rows stay in Google Sheets; duplicate cards are hidden from Customers.
           </p>
         </div>
         <div className="rounded-md border border-border bg-white px-4 py-3 text-sm">
-          <strong>{groups.length}</strong> possible group{groups.length === 1 ? "" : "s"} · <strong>{mergedCount}</strong> hidden merged row{mergedCount === 1 ? "" : "s"}
+          <strong>{exactDuplicateCount}</strong> exact duplicate row{exactDuplicateCount === 1 ? "" : "s"} · <strong>{mergedCount}</strong> already hidden
         </div>
       </div>
 
-      {groups.length === 0 ? (
-        <p className="mt-5 rounded-md border border-border bg-white p-4 text-sm text-text-secondary">No likely duplicates found right now.</p>
-      ) : (
-        <div className="mt-5 grid gap-4 lg:grid-cols-[280px_1fr]">
-          <div className="space-y-2">
-            {groups.map((item) => (
-              <button key={item.id} type="button" onClick={() => selectGroup(item.id)} className={`w-full rounded-md border px-4 py-3 text-left text-sm ${item.id === group?.id ? "border-text-primary bg-white" : "border-border bg-surface-elevated"}`}>
-                <span className="block font-medium">{item.reason}</span>
-                <span className="text-text-secondary">{item.rows.length} matching records</span>
-              </button>
-            ))}
-          </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-4">
+        <div className="rounded-lg border border-border bg-white p-4"><p className="font-serif text-3xl">{emailGroups}</p><p className="text-xs uppercase tracking-[0.14em] text-text-muted">email groups</p></div>
+        <div className="rounded-lg border border-border bg-white p-4"><p className="font-serif text-3xl">{phoneGroups}</p><p className="text-xs uppercase tracking-[0.14em] text-text-muted">phone groups</p></div>
+        <div className="rounded-lg border border-border bg-white p-4"><p className="font-serif text-3xl">{fuzzy.length}</p><p className="text-xs uppercase tracking-[0.14em] text-text-muted">name-only matches</p></div>
+        <div className="rounded-lg border border-border bg-white p-4"><p className="font-serif text-3xl">{exactDuplicateCount}</p><p className="text-xs uppercase tracking-[0.14em] text-text-muted">will be hidden</p></div>
+      </div>
 
-          {group && (
-            <div>
-              <div className="grid gap-3 xl:grid-cols-2">
-                {group.rows.map((row) => {
-                  const key = clientRowKey(row);
-                  const isMaster = key === masterKey;
-                  return (
-                    <article key={key} className={`rounded-lg border bg-white p-4 ${isMaster ? "border-success" : "border-border"}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-serif text-xl font-medium">{row.Name || "Client"}</p>
-                          <p className="mt-1 text-sm text-text-secondary">{row.Phone || "No phone"} · {row.Email || "No email"}</p>
-                        </div>
-                        <span className={`rounded-full px-3 py-1 text-[11px] ${isMaster ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>{isMaster ? "master" : "duplicate"}</span>
-                      </div>
-                      <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-                        <p><span className="text-text-muted">Service:</span> {row.Service || "Not imported"}</p>
-                        <p><span className="text-text-muted">Last visit:</span> {row["Last visit"] || "Not imported"}</p>
-                        <p><span className="text-text-muted">Source:</span> {row.Source || "Unknown"}</p>
-                        <p><span className="text-text-muted">Added:</span> {row.Added || "Unknown"}</p>
-                      </div>
-                      <div className="mt-4 grid gap-2 text-sm">
-                        <label className="flex items-center gap-2"><input type="radio" name={`master-${group.id}`} checked={isMaster} onChange={() => selectMaster(key)} /> Keep this as master profile</label>
-                        {!isMaster && (
-                          <label className="flex items-center gap-2">
-                            <input type="checkbox" checked={selected.has(key)} onChange={() => setSelected((current) => {
-                              const next = new Set(current);
-                              if (next.has(key)) next.delete(key);
-                              else next.add(key);
-                              return next;
-                            })} />
-                            Hide this duplicate after merge
-                          </label>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <button type="button" onClick={mergeAllExact} disabled={busy || exactDuplicateCount === 0} className="rounded-sm bg-gradient-brand px-6 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white disabled:opacity-50">
+          {busy ? "Merging..." : "Merge all exact duplicates"}
+        </button>
+        <p className="text-sm text-text-secondary">
+          {message || (fuzzy.length > 0 ? `${fuzzy.length} name-only group${fuzzy.length === 1 ? "" : "s"} need manual review later.` : "No name-only review needed.")}
+        </p>
+      </div>
+
+      {plans.length > 0 && (
+        <details className="mt-5 rounded-md border border-border bg-white p-4">
+          <summary className="cursor-pointer text-sm font-medium">Preview what will merge</summary>
+          <div className="mt-3 max-h-72 overflow-auto divide-y divide-border text-sm">
+            {plans.slice(0, 50).map((plan) => (
+              <div key={plan.id} className="py-3">
+                <p className="font-medium">Keep: {plan.master.Name || plan.master.Email || plan.master.Phone || "Client"}</p>
+                <p className="text-text-secondary">Hide {plan.duplicates.length}: {plan.duplicates.slice(0, 5).map((row) => row.Name || row.Email || row.Phone || "Client").join(", ")}{plan.duplicates.length > 5 ? "..." : ""}</p>
               </div>
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <button type="button" onClick={mergeSelected} disabled={busy} className="rounded-sm bg-gradient-brand px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-white disabled:opacity-50">
-                  {busy ? "Saving..." : "Merge selected duplicates"}
-                </button>
-                {message && <p className="text-sm text-text-secondary">{message}</p>}
-              </div>
-            </div>
-          )}
-        </div>
+            ))}
+            {plans.length > 50 && <p className="py-3 text-text-secondary">Showing first 50 of {plans.length} merge groups.</p>}
+          </div>
+        </details>
       )}
     </section>
   );

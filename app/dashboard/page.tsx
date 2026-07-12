@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdminTopNav from "@/components/app/AdminTopNav";
+import type { CalendarAppointment } from "@/components/dashboard/InteractiveCalendar";
 import InteractiveCalendar from "@/components/dashboard/InteractiveCalendar";
 import MiniMonthCalendar from "@/components/dashboard/MiniMonthCalendar";
 import { requireSession } from "@/lib/auth";
@@ -12,6 +13,37 @@ export const metadata: Metadata = {
 };
 
 const staff = ["Ciara", "Na", "Andy", "Cindy"];
+const colors = ["bg-[#d9eadf]", "bg-[#ead9c3]", "bg-[#d8e3ef]", "bg-[#eadce7]", "bg-[#eee6d8]"];
+
+function dateKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+}
+
+function parseImportedDate(value?: string) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
+function importedAppointments(clients: Record<string, string>[]): CalendarAppointment[] {
+  const rows: (CalendarAppointment | null)[] = clients
+    .map((client, index): CalendarAppointment | null => {
+      const date = parseImportedDate(client["Last visit"] || client["Last Visit"] || client.LastVisit || client.Date);
+      if (!date) return null;
+      const service = client.Service || client["Last service"] || client["Last Service"] || "Imported visit";
+      return {
+        date: dateKey(date),
+        time: ["9 AM", "10 AM", "11 AM", "1 PM", "2 PM", "3 PM"][index % 6],
+        title: service || "Imported visit",
+        client: client.Name || client.Email || client.Phone || "Imported client",
+        staff: client.Provider || client.Staff || "Imported",
+        color: colors[index % colors.length],
+      };
+    });
+
+  return rows.filter((appointment): appointment is CalendarAppointment => appointment !== null).slice(0, 250);
+}
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -29,6 +61,7 @@ export default async function DashboardPage() {
   const uniqueLocations = Array.from(new Set(locationOptions));
   const openBookings = bookings.filter((r) => (r.Status || "requested").toLowerCase() !== "confirmed").length;
   const newConcierge = concierge.filter((r) => (r.Status || "New").toLowerCase() === "new").length;
+  const historyAppointments = importedAppointments(clients);
 
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-text-primary">
@@ -79,7 +112,7 @@ export default async function DashboardPage() {
           </div>
         </aside>
 
-        <InteractiveCalendar clientsCount={clients.length} openBookings={openBookings} newConcierge={newConcierge} inventoryCount={inventory.length} />
+        <InteractiveCalendar clientsCount={clients.length} openBookings={openBookings} newConcierge={newConcierge} inventoryCount={inventory.length} historyAppointments={historyAppointments} />
       </div>
     </main>
   );

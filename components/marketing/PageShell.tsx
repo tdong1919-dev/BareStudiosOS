@@ -29,7 +29,7 @@ export default async function PageShell({
     <main>
       {session && !publicPage ? <AdminTopNav session={session} active={eyebrow} /> : <PublicSiteHeader />}
 
-      <section className={`${wide ? "max-w-6xl" : "max-w-3xl"} mx-auto px-5 py-14 sm:py-20`}>
+      <section className={`${wide ? "max-w-6xl" : "max-w-3xl"} ${publicPage ? "public-page-enter" : ""} mx-auto px-5 py-14 sm:py-20`}>
         <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">{eyebrow}</p>
         <h1 className="mt-3 font-serif text-4xl font-medium tracking-tight sm:text-5xl">{title}</h1>
         <p className="mt-5 max-w-xl leading-relaxed text-text-secondary">{intro}</p>

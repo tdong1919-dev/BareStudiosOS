@@ -43,7 +43,7 @@ export default function AboutPage() {
     <main>
       <PublicSiteHeader />
 
-      <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 py-16 sm:py-24 md:grid-cols-[0.95fr_1.05fr]">
+      <section className="reveal-up mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 py-16 sm:py-24 md:grid-cols-[0.95fr_1.05fr]">
         <div>
           <Eyebrow>About</Eyebrow>
           <h1 className="mt-4 font-serif text-5xl font-medium leading-[1.05] tracking-tight sm:text-6xl">
@@ -68,7 +68,7 @@ export default function AboutPage() {
             </Link>
           </div>
         </div>
-        <div className="overflow-hidden rounded-md border border-border bg-surface-elevated">
+        <div className="hover-lift overflow-hidden rounded-md border border-border bg-surface-elevated">
           <div className="relative aspect-[4/3] bg-linen">
             <Image src={`${IMAGE_BASE}/bare-studios-tools-station.png`} alt="Bare Studios hair and beauty tools" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
           </div>
@@ -85,14 +85,14 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 pb-20">
+      <section className="reveal-up mx-auto max-w-6xl px-5 pb-20">
         <div className="mb-6">
           <Eyebrow>What clients say</Eyebrow>
           <h2 className="mt-3 font-serif text-4xl font-medium">Kind words from the chair.</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-4">
           {ABOUT_REVIEWS.map((review) => (
-            <article key={review.name} className="rounded-md border border-border bg-surface p-6">
+            <article key={review.name} className="hover-lift rounded-md border border-border bg-surface p-6">
               <p className="text-sm font-medium text-success">★★★★★</p>
               <p className="mt-4 text-base leading-relaxed text-text-secondary">{review.text}</p>
               <div className="mt-6 border-t border-border pt-4">
@@ -109,7 +109,7 @@ export default function AboutPage() {
             ["bare-studios-blonde-hair.png", "Bare Studios hair service"],
             ["bare-studios-tools-station.png", "Bare Studios tools station"],
           ].map(([file, label]) => (
-            <div key={file} className="relative aspect-[4/3] overflow-hidden rounded-md border border-border bg-linen">
+            <div key={file} className="image-zoom relative aspect-[4/3] overflow-hidden rounded-md border border-border bg-linen">
               <Image src={`${IMAGE_BASE}/${file}`} alt={label} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-contain" />
             </div>
           ))}

@@ -56,7 +56,7 @@ const SCREENSHOT_REVIEWS = [
 
 function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <section id={id} className={`mx-auto max-w-6xl px-5 ${className}`}>
+    <section id={id} className={`reveal-up mx-auto max-w-6xl px-5 ${className}`}>
       {children}
     </section>
   );
@@ -79,7 +79,7 @@ function BookButton({ children = "Book an appointment", href = "/book" }: { chil
 
 function SalonImage({ label, src, className = "", showLabel = true }: { label: string; src: string; className?: string; showLabel?: boolean }) {
   return (
-    <div className={`relative overflow-hidden rounded-md border border-border bg-linen ${className}`}>
+    <div className={`image-zoom relative overflow-hidden rounded-md border border-border bg-linen ${className}`}>
       <Image src={src} alt={label} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-white/8" />
       {showLabel ? (
@@ -184,7 +184,7 @@ export default function BareStudiosHomePage() {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {FEATURED_SERVICES.map((service) => (
-            <Link key={service.name} href={service.href} className="group rounded-md border border-border bg-surface p-6 transition-colors hover:bg-surface-elevated">
+            <Link key={service.name} href={service.href} className="hover-lift group rounded-md border border-border bg-surface p-6 transition-colors hover:bg-surface-elevated">
               <div className="flex items-start justify-between gap-4">
                 <p className="font-serif text-2xl font-medium">{service.name}</p>
                 <span className="shrink-0 text-sm text-text-muted">{service.price}</span>
@@ -195,19 +195,40 @@ export default function BareStudiosHomePage() {
           ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-border bg-border md:grid-cols-2">
-          {BARE_SERVICE_CATEGORIES.map((category) => (
-            <div key={category.name} className="bg-white p-6">
-              <h3 className="font-serif text-2xl font-medium">{category.name}</h3>
-              <div className="mt-4 space-y-3">
+        <div className="mt-8 grid gap-3 md:grid-cols-2">
+          {BARE_SERVICE_CATEGORIES.map((category, index) => (
+            <details
+              key={category.name}
+              className="service-accordion hover-lift rounded-md border border-border bg-white"
+              open={index < 2}
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
+                <div>
+                  <h3 className="font-serif text-2xl font-medium">{category.name}</h3>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-text-muted">
+                    {category.services.length} {category.services.length === 1 ? "service" : "services"}
+                  </p>
+                </div>
+                <span className="service-accordion-icon grid size-9 shrink-0 place-items-center rounded-full border border-border text-2xl leading-none transition-transform">
+                  +
+                </span>
+              </summary>
+              <div className="max-h-[360px] overflow-y-auto border-t border-border px-5 pb-5">
                 {category.services.map((service) => (
-                  <Link key={service.name} href={`/book?service=${encodeURIComponent(service.name)}`} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-b-0">
+                  <Link
+                    key={service.name}
+                    href={`/book?service=${encodeURIComponent(service.name)}`}
+                    className="grid gap-2 border-b border-border py-4 last:border-b-0 sm:grid-cols-[1fr_auto]"
+                  >
                     <span className="text-sm text-text-primary">{service.name}</span>
-                    <span className="shrink-0 text-xs text-text-muted">{service.price} · {service.duration}</span>
+                    <span className="text-xs text-text-muted sm:text-right">{service.price} · {service.duration}</span>
+                    {service.description ? (
+                      <span className="text-xs leading-relaxed text-text-secondary sm:col-span-2">{service.description}</span>
+                    ) : null}
                   </Link>
                 ))}
               </div>
-            </div>
+            </details>
           ))}
         </div>
       </Section>

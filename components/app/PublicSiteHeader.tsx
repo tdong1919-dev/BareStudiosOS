@@ -9,7 +9,7 @@ export default function PublicSiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur">
+    <header className="public-page-enter sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <Link href="/" className="shrink-0 font-serif text-lg tracking-wide sm:text-xl">
           Bare Studios

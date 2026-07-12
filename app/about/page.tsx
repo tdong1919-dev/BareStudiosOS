@@ -15,6 +15,29 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 
 const IMAGE_BASE = "/images/bare-studios";
 
+const ABOUT_REVIEWS = [
+  {
+    name: "Courtney T",
+    service: "Lashes",
+    text: "Really personable and experienced. The appointment felt comfortable from start to finish, and I left with exactly the look I asked for.",
+  },
+  {
+    name: "Anna H",
+    service: "Waxing",
+    text: "Professional, kind, and knowledgeable. The service was easy, comfortable, and I felt confident coming back for future appointments.",
+  },
+  {
+    name: "Kara D",
+    service: "Waxing",
+    text: "Clean studio, easy conversation, and a relaxing experience. I would absolutely recommend booking here.",
+  },
+  {
+    name: "Shelby S",
+    service: "Skin + beauty",
+    text: "The service felt thoughtful and calming. I felt taken care of throughout the appointment and loved the final result.",
+  },
+];
+
 export default function AboutPage() {
   return (
     <main>
@@ -62,17 +85,35 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-5 pb-20 md:grid-cols-4">
-        {[
-          ["bare-studios-gallery-01.jpg", "Bare Studios studio detail"],
-          ["bare-studios-gallery-03.jpg", "Bare Studios interior"],
-          ["bare-studios-gallery-06.jpg", "Bare Studios service space"],
-          ["bare-studios-gallery-08.jpg", "Bare Studios beauty room"],
-        ].map(([file, label]) => (
-          <div key={file} className="relative aspect-[4/5] overflow-hidden rounded-md border border-border bg-linen">
-            <Image src={`${IMAGE_BASE}/${file}`} alt={label} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
-          </div>
-        ))}
+      <section className="mx-auto max-w-6xl px-5 pb-20">
+        <div className="mb-6">
+          <Eyebrow>What clients say</Eyebrow>
+          <h2 className="mt-3 font-serif text-4xl font-medium">Kind words from the chair.</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-4">
+          {ABOUT_REVIEWS.map((review) => (
+            <article key={review.name} className="rounded-md border border-border bg-surface p-6">
+              <p className="text-sm font-medium text-success">★★★★★</p>
+              <p className="mt-4 text-base leading-relaxed text-text-secondary">{review.text}</p>
+              <div className="mt-6 border-t border-border pt-4">
+                <p className="font-serif text-2xl">{review.name}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-text-muted">{review.service}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {[
+            ["bare-studios-facial-treatment.png", "Bare Studios facial treatment"],
+            ["bare-studios-blonde-hair.png", "Bare Studios hair service"],
+            ["bare-studios-tools-station.png", "Bare Studios tools station"],
+          ].map(([file, label]) => (
+            <div key={file} className="relative aspect-[4/3] overflow-hidden rounded-md border border-border bg-linen">
+              <Image src={`${IMAGE_BASE}/${file}`} alt={label} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-contain" />
+            </div>
+          ))}
+        </div>
       </section>
     </main>
   );

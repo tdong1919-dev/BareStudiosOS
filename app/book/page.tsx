@@ -25,7 +25,7 @@ export default function BookPage() {
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
           <div className="image-zoom relative min-h-32 overflow-hidden rounded-xl border border-border bg-linen">
-            <Image src="/images/bare-studios/bare-studios-service-room.jpg" alt="Bare Studios lash service room" fill sizes="(max-width: 768px) 50vw, 34vw" className="object-cover" />
+            <Image src="/images/bare-studios/bare-studios-blonde-hair.png" alt="Bare Studios hair service" fill sizes="(max-width: 768px) 50vw, 34vw" className="object-cover" />
           </div>
           <div className="image-zoom relative min-h-32 overflow-hidden rounded-xl border border-border bg-linen">
             <Image src="/images/bare-studios/bare-studios-facial-treatment.png" alt="Bare Studios facial treatment" fill sizes="(max-width: 768px) 50vw, 34vw" className="object-cover" />

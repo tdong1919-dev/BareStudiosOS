@@ -135,13 +135,13 @@ export default function BareStudiosHomePage() {
           <p className="mt-5 text-sm text-text-secondary">{BARE_STUDIOS.address} · {BARE_STUDIOS.phone}</p>
         </div>
         <div className="grid grid-cols-[0.75fr_1fr] gap-4">
-          <SalonImage label="Bare Studios" src={`${IMAGE_BASE}/bare-studios-hero.jpg`} className="aspect-[3/4] translate-y-10" />
+          <SalonImage label="Bare Studios" src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} className="aspect-[3/4] translate-y-10" />
           <div className="space-y-4">
-            <SalonImage label="Skin, lashes + brows" src={`${IMAGE_BASE}/bare-studios-service-room.jpg`} className="aspect-[4/3]" />
+            <SalonImage label="Facials + skin" src={`${IMAGE_BASE}/bare-studios-limited-time.jpeg`} className="aspect-[4/3]" />
             <div className="rounded-md border border-border bg-surface-elevated p-5">
-              <p className="font-serif text-3xl font-medium">New services added</p>
+              <p className="font-serif text-3xl font-medium">NOW HIRING</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                Signature facials, anti-aging facials, dermaplaning, body treatments, lash extensions, brows, waxing, and barbering.
+                Cosmetologists, estheticians, barbers, and suite rentals available.
               </p>
             </div>
           </div>

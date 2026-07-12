@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import PublicSiteHeader from "@/components/app/PublicSiteHeader";
 import { BARE_SERVICE_CATEGORIES, BARE_STUDIOS } from "@/lib/bare-studios";
 
 const FEATURED_SERVICES = [
@@ -93,37 +94,16 @@ function SalonImage({ label, src, className = "", showLabel = true }: { label: s
 export default function BareStudiosHomePage() {
   return (
     <main>
-      <header className="sticky top-0 z-30 border-b border-border bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link href="/" className="font-serif text-xl tracking-wide">
-            Bare Studios
-          </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            <a href="#services" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-              Services
-            </a>
-            <a href="#about" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-              About
-            </a>
-            <a href="#contact" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-              Contact
-            </a>
-            <Link href="/suite-rental" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-              Rent + Careers
-            </Link>
-          </nav>
-          <BookButton>Book now</BookButton>
-        </div>
-      </header>
+      <PublicSiteHeader />
 
       <Section className="grid min-h-[calc(100vh-4rem)] grid-cols-1 items-center gap-10 py-12 md:grid-cols-[0.95fr_1.05fr]">
         <div>
           <Eyebrow>Downtown Bel Air beauty studio</Eyebrow>
           <h1 className="mt-5 font-serif text-5xl font-medium leading-[1.03] tracking-tight sm:text-7xl">
-            Barber, hair, lashes, brows, and skin treatments made personal.
+            5 Star Unisex Hair & Beauty Salon
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary">
-            Bare Studios is a welcoming beauty salon and studio collective in Bel Air, Maryland, offering
+            For over 15 years, Bare Studios has served the Bel Air community as a family owned beauty salon offering
             barbering, hair, lash services, brows, waxing, facials, and restorative skin treatments.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -141,12 +121,15 @@ export default function BareStudiosHomePage() {
           <SalonImage label="Bare Studios storefront" src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} className="aspect-[3/4] translate-y-10" showLabel={false} />
           <div className="space-y-4">
             <SalonImage label="Bare Studios facial treatment" src={`${IMAGE_BASE}/bare-studios-facial-treatment.png`} className="aspect-[4/3]" showLabel={false} />
-            <div className="rounded-md border border-border bg-surface-elevated p-5">
+            <a
+              href="https://cheery-mermaid-329d0b.netlify.app/suite-rental"
+              className="block rounded-md border border-border bg-surface-elevated p-5 transition hover:bg-linen"
+            >
               <p className="font-serif text-3xl font-medium">NOW HIRING</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
                 Cosmetologists, estheticians, barbers, and suite rentals available.
               </p>
-            </div>
+            </a>
           </div>
         </div>
       </Section>

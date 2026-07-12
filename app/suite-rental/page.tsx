@@ -17,19 +17,10 @@ export default function SuiteRentalPage() {
       title="Build your beauty career at Bare Studios."
       intro="For all career, suite, and chair rental opportunities, contact Don directly. Bare Studios welcomes hair dressers, barbers, cosmetologists, estheticians, and beauty professionals looking for a supportive studio home."
       note={`${BARE_STUDIOS.address} · ${BARE_STUDIOS.phone}`}
+      publicPage
     >
-      <div className="mb-6 grid gap-3 md:grid-cols-[1.25fr_0.75fr]">
-        <div className="relative min-h-[280px] overflow-hidden rounded-xl border border-border bg-linen">
-          <Image src={`${imageBase}/bare-studios-hero.jpg`} alt="Bare Studios salon space" fill sizes="(max-width: 768px) 100vw, 60vw" className="object-cover" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
-          <div className="relative min-h-32 overflow-hidden rounded-xl border border-border bg-linen">
-            <Image src={`${imageBase}/bare-studios-gallery-05.jpg`} alt="Bare Studios salon suite" fill sizes="(max-width: 768px) 50vw, 35vw" className="object-cover" />
-          </div>
-          <div className="relative min-h-32 overflow-hidden rounded-xl border border-border bg-linen">
-            <Image src={`${imageBase}/bare-studios-gallery-07.jpg`} alt="Bare Studios beauty service room" fill sizes="(max-width: 768px) 50vw, 35vw" className="object-cover" />
-          </div>
-        </div>
+      <div className="relative mb-6 min-h-[320px] overflow-hidden rounded-xl border border-border bg-linen">
+        <Image src={`${imageBase}/bare-studios-hero.jpg`} alt="Bare Studios salon space" fill sizes="(max-width: 768px) 100vw, 900px" className="object-cover" />
       </div>
 
       <div className="grid gap-5 md:grid-cols-[1fr_0.9fr]">

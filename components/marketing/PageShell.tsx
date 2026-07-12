@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminTopNav from "@/components/app/AdminTopNav";
+import PublicSiteHeader from "@/components/app/PublicSiteHeader";
 import { getSession } from "@/lib/auth";
 
 /** Shared chrome for Bare Studios customer and studio pages. */
@@ -9,6 +10,7 @@ export default async function PageShell({
   intro,
   note,
   showBottomBack = false,
+  publicPage = false,
   wide = false,
   children,
 }: {
@@ -17,6 +19,7 @@ export default async function PageShell({
   intro: string;
   note?: string;
   showBottomBack?: boolean;
+  publicPage?: boolean;
   wide?: boolean;
   children: React.ReactNode;
 }) {
@@ -24,19 +27,7 @@ export default async function PageShell({
 
   return (
     <main>
-      {session ? <AdminTopNav session={session} active={eyebrow} /> : null}
-      {!session && (
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-5">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            Bare Studios
-          </Link>
-          <Link href="/" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-            Back home
-          </Link>
-        </div>
-      </header>
-      )}
+      {session && !publicPage ? <AdminTopNav session={session} active={eyebrow} /> : <PublicSiteHeader />}
 
       <section className={`${wide ? "max-w-6xl" : "max-w-3xl"} mx-auto px-5 py-14 sm:py-20`}>
         <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">{eyebrow}</p>

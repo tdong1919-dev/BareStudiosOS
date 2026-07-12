@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import PublicSiteHeader from "@/components/app/PublicSiteHeader";
 import { BARE_STUDIOS } from "@/lib/bare-studios";
 
 export const metadata: Metadata = {
@@ -17,16 +18,7 @@ const IMAGE_BASE = "/images/bare-studios";
 export default function AboutPage() {
   return (
     <main>
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            Bare Studios
-          </Link>
-          <Link href="/book" className="text-[12px] uppercase tracking-[0.14em] text-text-secondary hover:text-text-primary">
-            Book now
-          </Link>
-        </div>
-      </header>
+      <PublicSiteHeader />
 
       <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 py-16 sm:py-24 md:grid-cols-[0.95fr_1.05fr]">
         <div>

@@ -16,6 +16,7 @@ export default function BookPage() {
       title="Request your appointment."
       intro={`Choose a service at ${BARE_STUDIOS.name}, share your preferred date and time, and the studio will follow up to confirm your visit.`}
       note={`${BARE_STUDIOS.address} · ${BARE_STUDIOS.phone}`}
+      publicPage
       wide
     >
       <div className="mb-6 grid gap-3 md:grid-cols-[1fr_0.72fr]">

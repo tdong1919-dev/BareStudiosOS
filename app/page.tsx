@@ -230,7 +230,7 @@ export default function BareStudiosHomePage() {
       </Section>
 
       <Section id="about" className="grid grid-cols-1 items-center gap-10 py-20 md:grid-cols-[0.9fr_1.1fr]">
-        <SalonImage label="Welcome to the tribe" src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} className="aspect-[4/5]" />
+        <SalonImage label="Bare Studios hair service" src={`${IMAGE_BASE}/bare-studios-blonde-hair.png`} className="aspect-[4/5]" showLabel={false} />
         <div>
           <Eyebrow>About Bare Studios</Eyebrow>
           <h2 className="mt-3 font-serif text-4xl font-medium">A place to relax, recharge, and feel like yourself again.</h2>

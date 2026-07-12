@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AdminTopNav from "@/components/app/AdminTopNav";
 import InteractiveCalendar from "@/components/dashboard/InteractiveCalendar";
+import MiniMonthCalendar from "@/components/dashboard/MiniMonthCalendar";
 import { requireSession } from "@/lib/auth";
 import { getBusinessProfile, listLocations } from "@/lib/account-data";
 import { readSheetTab } from "@/lib/gviz";
@@ -10,12 +11,7 @@ export const metadata: Metadata = {
   title: "Dashboard - Bare Studios OS",
 };
 
-
 const staff = ["Ciara", "Na", "Andy", "Cindy"];
-
-function monthDays() {
-  return [28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1];
-}
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -65,13 +61,7 @@ export default async function DashboardPage() {
             <span className="rounded-full bg-[#30302f] px-2 py-1 text-xs text-white">Today</span>
           </div>
 
-          <div className="mt-5 rounded-lg border border-border bg-white p-4">
-            <div className="mb-3 flex items-center justify-between text-sm font-medium"><span>July 2026</span><span>‹ ›</span></div>
-            <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-text-muted">
-              {["S", "M", "T", "W", "TH", "F", "S"].map((d) => <span key={d}>{d}</span>)}
-              {monthDays().map((day, i) => <span key={`${day}-${i}`} className={`rounded-full py-1 ${day === 10 ? "bg-[#30302f] text-white" : i < 3 || i > 33 ? "text-text-muted/50" : ""}`}>{day}</span>)}
-            </div>
-          </div>
+          <MiniMonthCalendar />
 
           <div className="mt-5 rounded-lg border border-border bg-white p-4">
             <p className="mb-3 text-[11px] uppercase tracking-[0.14em] text-text-muted">Calendars</p>

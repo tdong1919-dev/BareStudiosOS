@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/ui/Modal";
 
 const week = ["Mon 6", "Tue 7", "Wed 8", "Thu 9", "Fri 10", "Sat 11", "Sun 12"];
@@ -48,6 +48,17 @@ export default function InteractiveCalendar({
   function openDay(day: string) {
     setSlot({ day, time: "Select time" });
   }
+
+  useEffect(() => {
+    function openFromMiniCalendar(event: Event) {
+      const detail = (event as CustomEvent<Slot>).detail;
+      if (!detail?.day) return;
+      setSlot({ day: detail.day, time: detail.time || "Select time" });
+    }
+
+    window.addEventListener("bare-calendar-open-slot", openFromMiniCalendar);
+    return () => window.removeEventListener("bare-calendar-open-slot", openFromMiniCalendar);
+  }, []);
 
   function toggleRecommendation(recommendation: string) {
     setApprovedRecommendations((current) => {

@@ -45,6 +45,10 @@ export default function InteractiveCalendar({
   const [approvedRecommendations, setApprovedRecommendations] = useState(() => new Set(recommendations));
   const slotTitle = useMemo(() => slot ? `${slot.day} at ${slot.time}` : "New appointment", [slot]);
 
+  function openDay(day: string) {
+    setSlot({ day, time: "Select time" });
+  }
+
   function toggleRecommendation(recommendation: string) {
     setApprovedRecommendations((current) => {
       const next = new Set(current);
@@ -81,7 +85,17 @@ export default function InteractiveCalendar({
         <div className="min-w-[980px]">
           <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border bg-white text-center text-sm font-medium">
             <div className="border-r border-border p-3" />
-            {week.map((day) => <div key={day} className="border-r border-border p-3 last:border-r-0">{day}</div>)}
+            {week.map((day) => (
+              <button
+                key={day}
+                type="button"
+                onClick={() => openDay(day)}
+                className="border-r border-border p-3 transition hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none last:border-r-0"
+                aria-label={`Add appointment on ${day}`}
+              >
+                {day}
+              </button>
+            ))}
           </div>
           <div className="relative grid grid-cols-[72px_repeat(7,1fr)]">
             <div className="bg-[#fbfaf7]">
@@ -119,6 +133,17 @@ export default function InteractiveCalendar({
 
       <Modal isOpen={Boolean(slot)} onClose={() => setSlot(null)} title={`Book ${slotTitle}`} size="lg">
         <div className="grid gap-4">
+          <label className="grid gap-1 text-sm font-medium">
+            Time
+            <select
+              className="rounded-md border border-border bg-white px-3 py-2.5 font-normal"
+              value={slot?.time && times.includes(slot.time) ? slot.time : ""}
+              onChange={(e) => slot && setSlot({ ...slot, time: e.target.value || "Select time" })}
+            >
+              <option value="">Select time</option>
+              {times.map((time, index) => <option key={`${time}-${index}`} value={time}>{time}</option>)}
+            </select>
+          </label>
           <label className="grid gap-1 text-sm font-medium">
             Client
             <select className="rounded-md border border-border bg-white px-3 py-2.5 font-normal" value={selectedClient} onChange={(e) => setSelectedClient(e.target.value)}>

@@ -27,8 +27,7 @@ export const TEAM_MEMBER_HEADERS = [
   "Services",
   "Available Hours",
   "Requested Time Off",
-  "Total Hours Worked",
-  "Total Revenue",
+  "Total Hours Scheduled Weekly",
   "Compensation Type",
   "Hourly Rate",
   "Salary",
@@ -93,8 +92,7 @@ export type TeamMember = {
   services?: string;
   availableHours?: string;
   requestedTimeOff?: string;
-  totalHoursWorked?: string;
-  totalRevenue?: string;
+  totalHoursScheduledWeekly?: string;
   compensationType?: string;
   hourlyRate?: string;
   salary?: string;
@@ -206,8 +204,7 @@ export async function listTeamMembers(ownerEmail: string, salon: string): Promis
       services: row.Services || "",
       availableHours: row["Available Hours"] || "",
       requestedTimeOff: row["Requested Time Off"] || "",
-      totalHoursWorked: row["Total Hours Worked"] || "",
-      totalRevenue: row["Total Revenue"] || "",
+      totalHoursScheduledWeekly: row["Total Hours Scheduled Weekly"] || row["Total Hours Worked"] || "",
       compensationType: row["Compensation Type"] || "",
       hourlyRate: row["Hourly Rate"] || "",
       salary: row.Salary || "",
@@ -231,8 +228,7 @@ export async function appendTeamMember(member: TeamMember) {
     member.services || "",
     member.availableHours || "",
     member.requestedTimeOff || "",
-    member.totalHoursWorked || "",
-    member.totalRevenue || "",
+    member.totalHoursScheduledWeekly || "",
     member.compensationType || "",
     member.hourlyRate || "",
     member.salary || "",

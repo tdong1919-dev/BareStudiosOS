@@ -20,11 +20,10 @@ export async function POST(request: NextRequest) {
   const accessLevel = String(form.get("accessLevel") || "Team member").trim();
   const role = accessLevel;
   const location = String(form.get("location") || "Primary").trim();
-  const services = String(form.get("services") || "").trim();
+  const services = form.getAll("services").map((service) => String(service).trim()).filter(Boolean).join(", ");
   const availableHours = String(form.get("availableHours") || "").trim();
   const requestedTimeOff = String(form.get("requestedTimeOff") || "").trim();
-  const totalHoursWorked = String(form.get("totalHoursWorked") || "").trim();
-  const totalRevenue = String(form.get("totalRevenue") || "").trim();
+  const totalHoursScheduledWeekly = String(form.get("totalHoursScheduledWeekly") || "").trim();
   const compensationType = String(form.get("compensationType") || "Commission").trim();
   const hourlyRate = String(form.get("hourlyRate") || "").trim();
   const salary = String(form.get("salary") || "").trim();
@@ -54,8 +53,7 @@ export async function POST(request: NextRequest) {
     services,
     availableHours,
     requestedTimeOff,
-    totalHoursWorked,
-    totalRevenue,
+    totalHoursScheduledWeekly,
     compensationType,
     hourlyRate,
     salary,
@@ -81,8 +79,7 @@ export async function POST(request: NextRequest) {
       "Role",
       "Services",
       "Available Hours",
-      "Total Hours Worked",
-      "Total Revenue",
+      "Total Hours Scheduled Weekly",
       "Compensation Type",
       "Hourly Rate",
       "Salary",
@@ -96,8 +93,7 @@ export async function POST(request: NextRequest) {
       role,
       services,
       availableHours,
-      totalHoursWorked,
-      totalRevenue,
+      totalHoursScheduledWeekly,
       compensationType,
       hourlyRate,
       salary,

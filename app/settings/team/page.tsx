@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 
 const inputClass =
   "w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-text-primary placeholder:text-text-muted";
+const serviceOptions = ["Barbering", "Women's hair", "Classic lash extensions", "Lash fills", "Korean lash lift + tint", "Facials", "Brows", "Waxing", "Body treatments", "Retail checkout"];
 
 export default async function TeamSettingsPage({
   searchParams,
@@ -103,11 +104,19 @@ export default async function TeamSettingsPage({
               <option>Team member</option>
             </select>
             <input className={inputClass} name="location" defaultValue={primaryLocation} aria-label="Location" />
-            <input className={inputClass} name="services" placeholder="Services provided" aria-label="Services provided" />
+            <details className="relative rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary sm:col-span-2">
+              <summary className="cursor-pointer list-none text-text-secondary">Services provided</summary>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {serviceOptions.map((service) => (
+                  <label key={service} className="flex items-center gap-2 rounded-md bg-surface-elevated px-3 py-2 text-sm">
+                    <input type="checkbox" name="services" value={service} /> {service}
+                  </label>
+                ))}
+              </div>
+            </details>
             <input className={inputClass} name="availableHours" placeholder="Available hours, e.g. Sun 9-7" aria-label="Available hours" />
             <input className={inputClass} name="requestedTimeOff" placeholder="Requested time off" aria-label="Requested time off" />
-            <input className={inputClass} name="totalHoursWorked" placeholder="Total hours worked" aria-label="Total hours worked" />
-            <input className={inputClass} name="totalRevenue" placeholder="Total revenue" aria-label="Total revenue" />
+            <input className={inputClass} name="totalHoursScheduledWeekly" placeholder="Total hours scheduled/expected weekly" aria-label="Total hours scheduled or expected weekly" />
             <select className={inputClass} name="compensationType" aria-label="Compensation type" defaultValue="Commission">
               <option>Hourly</option>
               <option>Salary</option>
@@ -143,7 +152,7 @@ export default async function TeamSettingsPage({
       {members.length > 0 && (
         <section className="mt-8 rounded-xl border border-border bg-surface p-6">
           <h2 className="font-serif text-2xl">Team profiles</h2>
-          <p className="mt-2 text-sm text-text-secondary">Owners can review access, services, hours, time off, revenue, and compensation. These fields feed the Staff and TeamMembers sheets for payroll support.</p>
+          <p className="mt-2 text-sm text-text-secondary">Owners can review access, services, hours, time off, and compensation. These fields feed the Staff and TeamMembers sheets for payroll support.</p>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
             {members.map((member) => (
               <article key={`${member.email}-${member.location}`} className="rounded-lg border border-border bg-white p-4">
@@ -156,11 +165,19 @@ export default async function TeamSettingsPage({
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <input className={inputClass} defaultValue={member.accessLevel || member.role} aria-label="Access level" />
-                  <input className={inputClass} defaultValue={member.services} placeholder="Services provided" aria-label="Services provided" />
+                  <details className="rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary sm:col-span-2">
+                    <summary className="cursor-pointer list-none text-text-secondary">Services provided: {member.services || "None selected"}</summary>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {serviceOptions.map((service) => (
+                        <label key={service} className="flex items-center gap-2 rounded-md bg-surface-elevated px-3 py-2 text-sm">
+                          <input type="checkbox" defaultChecked={(member.services || "").split(",").map((item) => item.trim()).includes(service)} /> {service}
+                        </label>
+                      ))}
+                    </div>
+                  </details>
                   <input className={inputClass} defaultValue={member.availableHours} placeholder="Available hours" aria-label="Available hours" />
                   <input className={inputClass} defaultValue={member.requestedTimeOff} placeholder="Requested time off" aria-label="Requested time off" />
-                  <input className={inputClass} defaultValue={member.totalHoursWorked} placeholder="Total hours worked" aria-label="Total hours worked" />
-                  <input className={inputClass} defaultValue={member.totalRevenue} placeholder="Total revenue" aria-label="Total revenue" />
+                  <input className={inputClass} defaultValue={member.totalHoursScheduledWeekly} placeholder="Total hours scheduled/expected weekly" aria-label="Total hours scheduled or expected weekly" />
                   <select className={inputClass} defaultValue={member.compensationType || "Commission"} aria-label="Compensation type">
                     <option>Hourly</option><option>Salary</option><option>Commission</option><option>Hourly + commission</option><option>Salary + commission</option>
                   </select>

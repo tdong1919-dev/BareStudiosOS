@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import PageShell from "@/components/marketing/PageShell";
 import { BARE_STUDIOS } from "@/lib/bare-studios";
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 
 export default function SuiteRentalPage() {
   const careersDigits = BARE_STUDIOS.careersPhone.replace(/[^0-9]/g, "");
+  const imageBase = "/images/bare-studios";
 
   return (
     <PageShell
@@ -16,6 +18,20 @@ export default function SuiteRentalPage() {
       intro="For all career, suite, and chair rental opportunities, contact Don directly. Bare Studios welcomes hair dressers, barbers, cosmetologists, estheticians, and beauty professionals looking for a supportive studio home."
       note={`${BARE_STUDIOS.address} · ${BARE_STUDIOS.phone}`}
     >
+      <div className="mb-6 grid gap-3 md:grid-cols-[1.25fr_0.75fr]">
+        <div className="relative min-h-[280px] overflow-hidden rounded-xl border border-border bg-linen">
+          <Image src={`${imageBase}/bare-studios-hero.jpg`} alt="Bare Studios salon space" fill sizes="(max-width: 768px) 100vw, 60vw" className="object-cover" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
+          <div className="relative min-h-32 overflow-hidden rounded-xl border border-border bg-linen">
+            <Image src={`${imageBase}/bare-studios-gallery-05.jpg`} alt="Bare Studios salon suite" fill sizes="(max-width: 768px) 50vw, 35vw" className="object-cover" />
+          </div>
+          <div className="relative min-h-32 overflow-hidden rounded-xl border border-border bg-linen">
+            <Image src={`${imageBase}/bare-studios-gallery-07.jpg`} alt="Bare Studios beauty service room" fill sizes="(max-width: 768px) 50vw, 35vw" className="object-cover" />
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-5 md:grid-cols-[1fr_0.9fr]">
         <section className="rounded-xl border border-border bg-surface p-6">
           <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted">Contact Don</p>

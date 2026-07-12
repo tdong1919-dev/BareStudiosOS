@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { BARE_SERVICE_CATEGORIES, BARE_STUDIOS } from "@/lib/bare-studios";
 
 const FEATURED_SERVICES = [
@@ -40,6 +41,17 @@ const REVIEW_IMPORTS = [
   },
 ];
 
+const IMAGE_BASE = "/images/bare-studios";
+
+const GALLERY_IMAGES = [
+  { src: `${IMAGE_BASE}/bare-studios-gallery-01.jpg`, label: "Studio detail" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-02.jpg`, label: "Treatment room" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-03.jpg`, label: "Bare Studios interior" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-04.jpg`, label: "Client experience" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-05.jpg`, label: "Salon suite" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-06.jpg`, label: "Beauty service space" },
+];
+
 function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
     <section id={id} className={`mx-auto max-w-6xl px-5 ${className}`}>
@@ -63,10 +75,11 @@ function BookButton({ children = "Book an appointment", href = "/book" }: { chil
   );
 }
 
-function SalonImage({ label, className = "" }: { label: string; className?: string }) {
+function SalonImage({ label, src, className = "" }: { label: string; src: string; className?: string }) {
   return (
-    <div className={`salon-image relative overflow-hidden rounded-md border border-border ${className}`}>
-      <div className="absolute inset-0 salon-image-glow" />
+    <div className={`relative overflow-hidden rounded-md border border-border bg-linen ${className}`}>
+      <Image src={src} alt={label} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-white/8" />
       <div className="absolute inset-x-5 bottom-5 rounded-md border border-white/45 bg-white/72 p-4 backdrop-blur-sm">
         <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">{label}</p>
       </div>
@@ -122,9 +135,9 @@ export default function BareStudiosHomePage() {
           <p className="mt-5 text-sm text-text-secondary">{BARE_STUDIOS.address} · {BARE_STUDIOS.phone}</p>
         </div>
         <div className="grid grid-cols-[0.75fr_1fr] gap-4">
-          <SalonImage label="Skin studio" className="aspect-[3/4] translate-y-10" />
+          <SalonImage label="Bare Studios" src={`${IMAGE_BASE}/bare-studios-hero.jpg`} className="aspect-[3/4] translate-y-10" />
           <div className="space-y-4">
-            <SalonImage label="Lashes + brows" className="aspect-[4/3]" />
+            <SalonImage label="Skin, lashes + brows" src={`${IMAGE_BASE}/bare-studios-service-room.jpg`} className="aspect-[4/3]" />
             <div className="rounded-md border border-border bg-surface-elevated p-5">
               <p className="font-serif text-3xl font-medium">New services added</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -132,6 +145,16 @@ export default function BareStudiosHomePage() {
               </p>
             </div>
           </div>
+        </div>
+      </Section>
+
+      <Section className="py-10">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+          {GALLERY_IMAGES.map((image) => (
+            <div key={image.src} className="relative aspect-[4/5] overflow-hidden rounded-md border border-border bg-linen">
+              <Image src={image.src} alt={image.label} fill sizes="(max-width: 768px) 50vw, 16vw" className="object-cover transition duration-500 hover:scale-105" />
+            </div>
+          ))}
         </div>
       </Section>
 
@@ -175,7 +198,7 @@ export default function BareStudiosHomePage() {
       </Section>
 
       <Section id="about" className="grid grid-cols-1 items-center gap-10 py-20 md:grid-cols-[0.9fr_1.1fr]">
-        <SalonImage label="Welcome to the tribe" className="aspect-[4/5]" />
+        <SalonImage label="Welcome to the tribe" src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} className="aspect-[4/5]" />
         <div>
           <Eyebrow>About Bare Studios</Eyebrow>
           <h2 className="mt-3 font-serif text-4xl font-medium">A place to relax, recharge, and feel like yourself again.</h2>
@@ -237,8 +260,10 @@ export default function BareStudiosHomePage() {
               </a>
             </div>
           </div>
-          <div className="flex min-h-[360px] items-center justify-center bg-white p-8">
-            <div className="w-full rounded-md border border-border p-6">
+          <div className="relative min-h-[360px] overflow-hidden bg-linen">
+            <Image src={`${IMAGE_BASE}/bare-studios-waxing-room.jpg`} alt="Bare Studios treatment room" fill sizes="(max-width: 768px) 100vw, 42vw" className="object-cover" />
+            <div className="absolute inset-0 bg-white/20" />
+            <div className="absolute inset-x-8 bottom-8 rounded-md border border-border bg-white/86 p-6 backdrop-blur-sm">
               <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Booking note</p>
               <p className="mt-3 font-serif text-3xl font-medium">Choose your service, preferred time, and artist.</p>
               <p className="mt-4 text-sm leading-relaxed text-text-secondary">

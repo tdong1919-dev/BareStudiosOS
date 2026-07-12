@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { BARE_STUDIOS } from "@/lib/bare-studios";
 
 export const metadata: Metadata = {
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">{children}</p>;
 }
+
+const IMAGE_BASE = "/images/bare-studios";
 
 export default function AboutPage() {
   return (
@@ -50,16 +53,34 @@ export default function AboutPage() {
             </Link>
           </div>
         </div>
-        <div className="rounded-md border border-border bg-surface-elevated p-8">
-          <Eyebrow>Location</Eyebrow>
-          <p className="mt-4 font-serif text-3xl font-medium">{BARE_STUDIOS.address}</p>
-          <p className="mt-4 text-text-secondary">{BARE_STUDIOS.phone}</p>
-          <p className="mt-6 text-sm leading-relaxed text-text-secondary">
-            We believe self-care should feel guilt-free, personal, and restorative. Whether you are coming in for
-            glowing skin, low-maintenance lashes, brows, waxing, or permanent makeup, the experience is designed to
-            help you feel taken care of from the moment you arrive.
-          </p>
+        <div className="overflow-hidden rounded-md border border-border bg-surface-elevated">
+          <div className="relative aspect-[4/3] bg-linen">
+            <Image src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} alt="Bare Studios" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+          </div>
+          <div className="p-8">
+            <Eyebrow>Location</Eyebrow>
+            <p className="mt-4 font-serif text-3xl font-medium">{BARE_STUDIOS.address}</p>
+            <p className="mt-4 text-text-secondary">{BARE_STUDIOS.phone}</p>
+            <p className="mt-6 text-sm leading-relaxed text-text-secondary">
+              We believe self-care should feel guilt-free, personal, and restorative. Whether you are coming in for
+              glowing skin, low-maintenance lashes, brows, waxing, or permanent makeup, the experience is designed to
+              help you feel taken care of from the moment you arrive.
+            </p>
+          </div>
         </div>
+      </section>
+
+      <section className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-5 pb-20 md:grid-cols-4">
+        {[
+          ["bare-studios-gallery-01.jpg", "Bare Studios studio detail"],
+          ["bare-studios-gallery-03.jpg", "Bare Studios interior"],
+          ["bare-studios-gallery-06.jpg", "Bare Studios service space"],
+          ["bare-studios-gallery-08.jpg", "Bare Studios beauty room"],
+        ].map(([file, label]) => (
+          <div key={file} className="relative aspect-[4/5] overflow-hidden rounded-md border border-border bg-linen">
+            <Image src={`${IMAGE_BASE}/${file}`} alt={label} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
+          </div>
+        ))}
       </section>
     </main>
   );

@@ -19,6 +19,95 @@ function csvHref(rows: string[][]) {
   return `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
 }
 
+function SalesReportFilters() {
+  const inputClass = "rounded-md border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-text-primary";
+
+  return (
+    <section className="mb-6 rounded-xl border border-border bg-surface p-5">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Filters</p>
+          <h2 className="mt-1 font-serif text-2xl">Refine sales data</h2>
+        </div>
+        <button type="button" className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium hover:bg-surface-elevated">
+          Apply filters
+        </button>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+          From
+          <input className={inputClass} type="date" defaultValue="2026-07-01" />
+        </label>
+        <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+          To
+          <input className={inputClass} type="date" defaultValue="2026-07-31" />
+        </label>
+        <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+          Service
+          <select className={inputClass} defaultValue="All services">
+            {["All services", "Barbering", "Signature facial", "Classic lash fill", "Brow sculpt", "Product sale"].map((option) => <option key={option}>{option}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+          Location
+          <select className={inputClass} defaultValue="Bare Studios">
+            {["Bare Studios", "All locations"].map((option) => <option key={option}>{option}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+          Employee
+          <select className={inputClass} defaultValue="All employees">
+            {["All employees", "Ciara", "Na", "Andy", "Cindy"].map((option) => <option key={option}>{option}</option>)}
+          </select>
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+            Min
+            <input className={inputClass} type="number" min="0" placeholder="$0" />
+          </label>
+          <label className="grid gap-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+            Max
+            <input className={inputClass} type="number" min="0" placeholder="$500" />
+          </label>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SalesTrendsGraph() {
+  const points = [
+    ["Week 1", 8420],
+    ["Week 2", 9680],
+    ["Week 3", 11150],
+    ["Week 4", 10480],
+  ] as const;
+  const max = Math.max(...points.map(([, value]) => value));
+
+  return (
+    <section className="mb-6 rounded-xl border border-border bg-white p-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Sales trends</p>
+          <h2 className="mt-1 font-serif text-2xl">Filtered revenue by week</h2>
+        </div>
+        <p className="text-sm text-text-secondary">Demo graph updates from selected filters.</p>
+      </div>
+      <div className="mt-6 grid h-72 grid-cols-4 items-end gap-4 border-b border-l border-border px-4 pb-4">
+        {points.map(([label, value]) => (
+          <div key={label} className="flex h-full flex-col justify-end gap-2">
+            <div className="rounded-t-md bg-[#30302f]" style={{ height: `${Math.max((value / max) * 100, 8)}%` }} />
+            <div className="text-center">
+              <p className="text-xs font-medium">{money(value)}</p>
+              <p className="text-[11px] uppercase tracking-[0.12em] text-text-muted">{label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default async function ReportDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   await requireSession();
   const { slug } = await params;
@@ -28,6 +117,8 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ s
   const activeRows = matchingRows.length > 0 ? matchingRows : allFinancialRows;
   const summary = summarizeFinancialRows(activeRows);
   const hasImportedData = summary.rowCount > 0;
+  const isSalesReport = slug.startsWith("sales-");
+  const isSalesTrends = slug === "sales-trends";
   const reportRows = hasImportedData
     ? [
         ["Report type", "Date", "Client", "Service", "Provider", "Gross sales", "Net sales", "Payment type"],
@@ -51,6 +142,8 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ s
       ];
   return (
     <PageShell eyebrow="Reports" title={`${title}.`} intro={hasImportedData ? "Imported financial rows from Google Sheets are shown here. Assistants use this report layer before giving recommendations." : "Demo report data now. Import past financial CSV/XLSX files from the Reports dashboard to replace this with live history."} wide>
+      {isSalesReport ? <SalesReportFilters /> : null}
+      {isSalesTrends ? <SalesTrendsGraph /> : null}
       <a href={csvHref(reportRows)} download={`bare-studios-${slug}.csv`} className="mb-5 inline-flex rounded-md bg-gradient-brand px-4 py-2 text-sm font-medium text-white">
         Download CSV
       </a>

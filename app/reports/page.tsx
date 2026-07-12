@@ -3,14 +3,14 @@ import Link from "next/link";
 import PageShell from "@/components/marketing/PageShell";
 import FinancialReportImporter from "@/components/reports/FinancialReportImporter";
 import { requireSession } from "@/lib/auth";
-import { getFinancialReportRows, money, reportDisplay, reportGrossValue, reportNetValue, reportSlug, summarizeFinancialRows } from "@/lib/financial-reports";
+import { getFinancialReportRows, money, reportSlug, summarizeFinancialRows } from "@/lib/financial-reports";
 
 export const metadata: Metadata = { title: "Reports - Bare Studios OS" };
 
 const groups = [
   ["Sales", ["Transaction list", "Sales summary", "Deposits", "Payment distribution", "Product sales", "Product sales by customer", "Services/classes", "Trends", "Combined report"]],
   ["Employees", ["Sales", "Customer retention", "Rebooking", "Rent collection", "Time card", "Payroll", "Payroll configuration", "Payroll history", "Print daily plan", "Time off"]],
-  ["Customers", ["New vs returning", "Packages", "Memberships", "Gift cards", "IOU", "Failed payments", "Unsigned forms/SOAPs", "Check-in log", "Review management"]],
+  ["Customers", ["Packages", "Memberships", "Gift cards", "IOU", "Failed payments", "Unsigned forms/SOAPs", "Check-in log", "Review management"]],
   ["Appointments", ["Source", "Appointments summary", "Missed checkouts/check-ins", "Booking percentage", "Cancellation & no-shows"]],
   ["Inventory", ["Stock trends", "Sales trends", "Inventory summary", "Sales by brand", "Sales by category", "Sales by product", "Current stock", "Unsold/unused products", "Inventory by status", "Pending shipments"]],
 ];
@@ -49,59 +49,6 @@ export default async function ReportsPage() {
                 <p className="mt-2 font-serif text-3xl">{value}</p>
               </div>
             ))}
-          </section>
-          <section className="mb-6 rounded-xl border border-border bg-white p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-text-muted">Imported preview</p>
-                <h2 className="mt-2 font-serif text-2xl">Recent financial rows</h2>
-              </div>
-              <a
-                href={csvHref([
-                  ["Report type", "Date", "Client", "Service", "Provider", "Gross", "Net"],
-                  ...financialSummary.rows.map((row) => [
-                    row["Report type"] || "",
-                    reportDisplay(row).date,
-                    reportDisplay(row).client,
-                    reportDisplay(row).service,
-                    reportDisplay(row).provider,
-                    String(reportGrossValue(row) || ""),
-                    String(reportNetValue(row) || ""),
-                  ]),
-                ])}
-                download="bare-studios-imported-financial-reports.csv"
-                className="rounded-md border border-border bg-surface-elevated px-3 py-2 text-xs font-medium hover:bg-linen"
-              >
-                Download imported CSV
-              </a>
-            </div>
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead className="text-xs uppercase tracking-[0.12em] text-text-muted">
-                  <tr>
-                    {["Type", "Date", "Client", "Service", "Provider", "Gross", "Net"].map((header) => (
-                      <th key={header} className="border-b border-border px-3 py-2 font-medium">{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {financialSummary.recentRows.map((row, index) => {
-                    const display = reportDisplay(row);
-                    return (
-                      <tr key={`${row["Report type"]}-${display.date}-${index}`}>
-                        <td className="border-b border-border px-3 py-2">{row["Report type"] || "-"}</td>
-                        <td className="border-b border-border px-3 py-2">{display.date || row.Added || "-"}</td>
-                        <td className="border-b border-border px-3 py-2">{display.client || "-"}</td>
-                        <td className="border-b border-border px-3 py-2">{display.service || "-"}</td>
-                        <td className="border-b border-border px-3 py-2">{display.provider || "-"}</td>
-                        <td className="border-b border-border px-3 py-2">{money(reportGrossValue(row))}</td>
-                        <td className="border-b border-border px-3 py-2">{money(reportNetValue(row))}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
           </section>
         </>
       )}

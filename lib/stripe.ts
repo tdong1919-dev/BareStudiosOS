@@ -12,7 +12,7 @@ export function getStripe(): Stripe | null {
 }
 
 export function connectConfigured(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_CONNECT_CLIENT_ID);
+  return Boolean(process.env.STRIPE_SECRET_KEY);
 }
 
 export function appBaseUrl(fallback: string): string {

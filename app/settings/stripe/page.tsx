@@ -32,8 +32,8 @@ export default async function StripeSettingsPage({
     <PageShell
       eyebrow="Settings · Payments"
       title="Connect your Stripe."
-      intro="Link your own Stripe account and payments — including client wallet loads — settle directly to you, minus an optional platform fee. We never see or store your Stripe secret keys; you sign in on Stripe and we keep only your account id."
-      note="Uses Stripe Connect (Standard). You'll log into your existing Stripe during the connect step."
+      intro="Link your own Stripe account and payments — including client wallet loads — settle directly to you, minus an optional platform fee. We never see or store your salon Stripe secret keys; Stripe hosts onboarding and we keep only your account id."
+      note="Uses Stripe Connect account onboarding. You'll complete the Stripe-hosted setup during the connect step."
     >
       {status === "connected" && (
         <p className="mb-5 rounded-md border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
@@ -50,11 +50,8 @@ export default async function StripeSettingsPage({
         <div className="rounded-xl border border-border bg-surface-elevated p-6 text-sm text-text-secondary">
           <p className="font-medium text-text-primary">Stripe isn&apos;t configured yet.</p>
           <p className="mt-2">
-            Set <code className="rounded bg-black/[0.05] px-1">STRIPE_SECRET_KEY</code> and{" "}
-            <code className="rounded bg-black/[0.05] px-1">STRIPE_CONNECT_CLIENT_ID</code> (from your Stripe
-            Connect settings), and register{" "}
-            <code className="rounded bg-black/[0.05] px-1">/api/stripe/callback</code> as an OAuth redirect URI.
-            See SETUP.md.
+            Set <code className="rounded bg-black/[0.05] px-1">STRIPE_SECRET_KEY</code> in Netlify. The app creates a
+            Stripe Connect account link and sends the owner through Stripe-hosted onboarding.
           </p>
         </div>
       ) : (
@@ -64,7 +61,7 @@ export default async function StripeSettingsPage({
           <button type="submit" className="rounded-sm bg-gradient-brand px-7 py-3.5 text-[12px] uppercase tracking-[0.14em] text-white">
             Connect {session.salon || "your salon"} with Stripe
           </button>
-          <p className="text-xs text-text-muted">You&apos;ll be sent to Stripe to sign in and approve — then back here.</p>
+          <p className="text-xs text-text-muted">You&apos;ll be sent to Stripe-hosted onboarding — then back here.</p>
         </form>
       )}
 

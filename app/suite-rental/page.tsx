@@ -18,6 +18,7 @@ export default function SuiteRentalPage() {
       intro="For all career, suite, and chair rental opportunities, contact Don directly. Bare Studios welcomes hair dressers, barbers, cosmetologists, estheticians, and beauty professionals looking for a supportive studio home."
       note={`${BARE_STUDIOS.address} · ${BARE_STUDIOS.phone}`}
       publicPage
+      wide
     >
       <div className="relative mb-6 min-h-[320px] overflow-hidden rounded-xl border border-border bg-linen">
         <Image src={`${imageBase}/bare-studios-hero.jpg`} alt="Bare Studios salon space" fill sizes="(max-width: 768px) 100vw, 900px" className="object-cover" />

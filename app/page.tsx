@@ -23,33 +23,34 @@ const FEATURED_SERVICES = [
   },
 ];
 
-const REVIEW_IMPORTS = [
+const GOOGLE_REVIEW_URL = "https://share.google/YiUtDBNAjtVdfTYm6";
+
+const GOOGLE_REVIEWS = [
   {
-    source: "Google",
-    status: "Google Business Profile",
-    text: "Live Google reviews will appear here once Bare Studios connects the review feed.",
+    name: "Google Reviews",
+    text: "Read verified Google reviews from clients who visit Bare Studios for beauty, waxing, lashes, skin, and barbering services.",
   },
   {
-    source: "Vagaro",
-    status: "Past booking reviews",
-    text: "Existing Vagaro reviews can be imported here during the migration so clients can see trusted feedback.",
+    name: "Google Reviews",
+    text: "Clients can open the Google review page to see the latest public feedback, ratings, and client experiences.",
   },
   {
-    source: "Review concierge",
-    status: "Coming next",
-    text: "New reviews can be requested after visits and routed into this section for approval or automatic publishing.",
+    name: "Google Reviews",
+    text: "Have a recent visit to share? Leave Bare Studios a Google review so new clients can find the right service with confidence.",
   },
 ];
 
 const IMAGE_BASE = "/images/bare-studios";
 
-const GALLERY_IMAGES = [
-  { src: `${IMAGE_BASE}/bare-studios-gallery-01.jpg`, label: "Studio detail" },
-  { src: `${IMAGE_BASE}/bare-studios-gallery-02.jpg`, label: "Treatment room" },
-  { src: `${IMAGE_BASE}/bare-studios-gallery-03.jpg`, label: "Bare Studios interior" },
-  { src: `${IMAGE_BASE}/bare-studios-gallery-04.jpg`, label: "Client experience" },
-  { src: `${IMAGE_BASE}/bare-studios-gallery-05.jpg`, label: "Salon suite" },
-  { src: `${IMAGE_BASE}/bare-studios-gallery-06.jpg`, label: "Beauty service space" },
+const SCREENSHOT_REVIEWS = [
+  { src: `${IMAGE_BASE}/bare-studios-gallery-01.jpg`, label: "Kandy M review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-02.jpg`, label: "Kara D review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-03.jpg`, label: "Jocelyn G review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-04.jpg`, label: "Morgan B review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-05.jpg`, label: "Janelle L review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-06.jpg`, label: "Anna H review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-07.jpg`, label: "Juliana S review" },
+  { src: `${IMAGE_BASE}/bare-studios-gallery-08.jpg`, label: "Shelby S review" },
 ];
 
 function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
@@ -148,12 +149,41 @@ export default function BareStudiosHomePage() {
         </div>
       </Section>
 
-      <Section className="py-10">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
-          {GALLERY_IMAGES.map((image) => (
-            <div key={image.src} className="relative aspect-[4/5] overflow-hidden rounded-md border border-border bg-linen">
-              <Image src={image.src} alt={image.label} fill sizes="(max-width: 768px) 50vw, 16vw" className="object-cover transition duration-500 hover:scale-105" />
-            </div>
+      <Section className="py-12">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Eyebrow>Client love</Eyebrow>
+            <h2 className="mt-2 font-serif text-3xl font-medium">Reviews from Google and past booking platforms.</h2>
+          </div>
+          <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.14em] text-text-primary underline underline-offset-4">
+            Open Google reviews
+          </a>
+        </div>
+        <div className="-mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-4">
+          {GOOGLE_REVIEWS.map((review, index) => (
+            <a
+              key={`${review.name}-${index}`}
+              href={GOOGLE_REVIEW_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-[360px] w-[300px] shrink-0 snap-start flex-col justify-between rounded-md border border-border bg-surface-elevated p-6 transition hover:bg-linen sm:w-[360px]"
+            >
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Google</p>
+                <p className="mt-3 text-lg font-medium text-success">★★★★★</p>
+                <p className="mt-5 font-serif text-2xl leading-snug">{review.text}</p>
+              </div>
+              <p className="mt-6 text-[12px] uppercase tracking-[0.14em] text-text-secondary">{review.name}</p>
+            </a>
+          ))}
+          {SCREENSHOT_REVIEWS.map((review) => (
+            <Link
+              key={review.src}
+              href="/book"
+              className="relative h-[360px] w-[300px] shrink-0 snap-start overflow-hidden rounded-md border border-border bg-white p-3 transition hover:bg-surface-elevated sm:w-[360px]"
+            >
+              <Image src={review.src} alt={review.label} fill sizes="360px" className="object-contain p-3" />
+            </Link>
           ))}
         </div>
       </Section>
@@ -221,22 +251,6 @@ export default function BareStudiosHomePage() {
               Rent + careers
             </Link>
           </div>
-        </div>
-      </Section>
-
-      <Section className="py-20">
-        <div className="mb-8 text-center">
-          <Eyebrow>What clients say</Eyebrow>
-          <h2 className="mt-3 font-serif text-4xl font-medium">Reviews imported from Google and Vagaro.</h2>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {REVIEW_IMPORTS.map((review) => (
-            <figure key={review.source} className="rounded-md border border-border bg-surface-elevated p-6">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">{review.source}</p>
-              <p className="mt-3 font-serif text-2xl leading-snug">{review.text}</p>
-              <figcaption className="mt-5 text-xs uppercase tracking-[0.14em] text-text-muted">{review.status}</figcaption>
-            </figure>
-          ))}
         </div>
       </Section>
 

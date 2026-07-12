@@ -47,7 +47,7 @@ export default function AboutPage() {
         </div>
         <div className="overflow-hidden rounded-md border border-border bg-surface-elevated">
           <div className="relative aspect-[4/3] bg-linen">
-            <Image src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} alt="Bare Studios" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+            <Image src={`${IMAGE_BASE}/bare-studios-tools-station.png`} alt="Bare Studios hair and beauty tools" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
           </div>
           <div className="p-8">
             <Eyebrow>Location</Eyebrow>

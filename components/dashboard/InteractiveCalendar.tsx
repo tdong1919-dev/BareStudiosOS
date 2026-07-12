@@ -8,12 +8,96 @@ const times = ["7 AM", "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM"
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const fallbackAppointments: CalendarAppointment[] = [
-  { date: "2026-07-07", time: "8 AM", title: "Classic fill", client: "Jasmine R.", staff: "Na", color: "bg-[#d9eadf]" },
-  { date: "2026-07-08", time: "10 AM", title: "Custom facial", client: "Sandra M.", staff: "Ciara", color: "bg-[#ead9c3]" },
-  { date: "2026-07-10", time: "12 PM", title: "Barber consult", client: "John B.", staff: "Andy", color: "bg-[#d8e3ef]" },
-  { date: "2026-07-12", time: "9 AM", title: "Lash lift + tint", client: "Maya L.", staff: "Ciara", color: "bg-[#eadce7]" },
+const staffColors: Record<string, string> = {
+  Ciara: "bg-[#ead9c3]",
+  Na: "bg-[#d9eadf]",
+  Andy: "bg-[#d8e3ef]",
+  Cindy: "bg-[#eadce7]",
+};
+
+const juneDemoAppointments: CalendarAppointment[] = [
+  { date: "2026-06-02", time: "9 AM", title: "Signature facial", client: "Jasmine Rivera", staff: "Ciara" },
+  { date: "2026-06-02", time: "11 AM", title: "Classic lash fill", client: "Maya Lewis", staff: "Na" },
+  { date: "2026-06-03", time: "10 AM", title: "Barbering", client: "Marcus Bennett", staff: "Andy" },
+  { date: "2026-06-03", time: "1 PM", title: "Hair color refresh", client: "Emma Collins", staff: "Cindy" },
+  { date: "2026-06-05", time: "12 PM", title: "Brow sculpt", client: "Sofia Martinez", staff: "Ciara" },
+  { date: "2026-06-07", time: "9 AM", title: "Hybrid lash refill", client: "Lauren Kim", staff: "Na" },
+  { date: "2026-06-09", time: "2 PM", title: "Anti-aging facial", client: "Denise Carter", staff: "Ciara" },
+  { date: "2026-06-10", time: "11 AM", title: "Barbering", client: "Trevor Hughes", staff: "Andy" },
+  { date: "2026-06-11", time: "3 PM", title: "Women's haircut", client: "Rachel Moore", staff: "Cindy" },
+  { date: "2026-06-14", time: "10 AM", title: "Classic full set", client: "Kelsey Nguyen", staff: "Na" },
+  { date: "2026-06-16", time: "9 AM", title: "Dermaplaning facial", client: "Priya Shah", staff: "Ciara" },
+  { date: "2026-06-17", time: "4 PM", title: "Barbering", client: "Anthony Reed", staff: "Andy" },
+  { date: "2026-06-18", time: "12 PM", title: "Blowout + style", client: "Olivia James", staff: "Cindy" },
+  { date: "2026-06-21", time: "1 PM", title: "Korean lash lift", client: "Hailey Brooks", staff: "Na" },
+  { date: "2026-06-23", time: "11 AM", title: "Back facial", client: "Morgan Bailey", staff: "Ciara" },
+  { date: "2026-06-24", time: "2 PM", title: "Barbering", client: "Evan Thompson", staff: "Andy" },
+  { date: "2026-06-25", time: "10 AM", title: "Root touch-up", client: "Natalie White", staff: "Cindy" },
+  { date: "2026-06-28", time: "9 AM", title: "Volume lash refill", client: "Alyssa Green", staff: "Na" },
+].map((appointment) => ({ ...appointment, color: staffColors[appointment.staff || ""] || "bg-[#eee6d8]" }));
+
+const julyClients = [
+  "Jasmine Rivera",
+  "Sandra Miller",
+  "Maya Lewis",
+  "Lauren Kim",
+  "Kelsey Nguyen",
+  "Sofia Martinez",
+  "Priya Shah",
+  "Denise Carter",
+  "Hailey Brooks",
+  "Morgan Bailey",
+  "Marcus Bennett",
+  "Trevor Hughes",
+  "Anthony Reed",
+  "Evan Thompson",
+  "Noah Parker",
+  "Emma Collins",
+  "Rachel Moore",
+  "Olivia James",
+  "Natalie White",
+  "Camila Torres",
+  "Ava Robinson",
+  "Lily Chen",
+  "Grace Walker",
+  "Isabella Young",
 ];
+
+const julyTemplates = [
+  { time: "9 AM", title: "Signature facial", staff: "Ciara" },
+  { time: "10 AM", title: "Classic lash fill", staff: "Na" },
+  { time: "11 AM", title: "Barbering", staff: "Andy" },
+  { time: "12 PM", title: "Women's haircut", staff: "Cindy" },
+  { time: "1 PM", title: "Brow sculpt", staff: "Ciara" },
+  { time: "2 PM", title: "Hybrid lash refill", staff: "Na" },
+  { time: "3 PM", title: "Barbering", staff: "Andy" },
+  { time: "4 PM", title: "Hair color refresh", staff: "Cindy" },
+  { time: "5 PM", title: "Dermaplaning facial", staff: "Ciara" },
+];
+
+const julyDemoAppointments: CalendarAppointment[] = Array.from({ length: 31 }, (_, dayIndex) => {
+  const day = dayIndex + 1;
+  const date = new Date(2026, 6, day);
+  const isSunday = date.getDay() === 0;
+  const isMonday = date.getDay() === 1;
+  const dailyCount = isMonday ? 3 : isSunday ? 4 : 5;
+  const offset = dayIndex % julyTemplates.length;
+
+  return Array.from({ length: dailyCount }, (_, apptIndex) => {
+    const template = julyTemplates[(offset + apptIndex * 2) % julyTemplates.length];
+    const client = julyClients[(dayIndex * 3 + apptIndex) % julyClients.length];
+    return {
+      date: `2026-07-${String(day).padStart(2, "0")}`,
+      time: template.time,
+      title: template.title,
+      client,
+      staff: template.staff,
+      color: staffColors[template.staff] || "bg-[#eee6d8]",
+    };
+  });
+}).flat();
+
+const demoAppointments: CalendarAppointment[] = [...juneDemoAppointments, ...julyDemoAppointments];
 
 const clients = ["Jasmine R.", "Sandra M.", "John B.", "Maya L.", "New client"];
 const services = ["Classic lash fill", "Custom facial", "Barbering", "Korean lash lift + tint", "Brow sculpt", "Full body treatment"];
@@ -123,7 +207,14 @@ export default function InteractiveCalendar({
   const [selectedDate, setSelectedDate] = useState<SelectedDate>(() => selectedFromDate(new Date(2026, 6, 10)));
   const selectedDateObj = useMemo(() => parseDateKey(selectedDate.iso || "2026-07-10"), [selectedDate.iso]);
   const monthDate = new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), 1);
-  const appointments = historyAppointments.length > 0 ? historyAppointments : fallbackAppointments;
+  const appointments = useMemo(() => {
+    const seen = new Set(demoAppointments.map((appointment) => `${appointment.date}-${appointment.time}-${appointment.client}-${appointment.title}`));
+    const imported = historyAppointments
+      .filter((appointment) => !seen.has(`${appointment.date}-${appointment.time}-${appointment.client}-${appointment.title}`))
+      .slice(0, 120);
+
+    return [...demoAppointments, ...imported];
+  }, [historyAppointments]);
   const appointmentClients = useMemo(() => {
     const names = appointments.map((appt) => appt.client).filter(Boolean);
     return Array.from(new Set([...names, ...clients]));

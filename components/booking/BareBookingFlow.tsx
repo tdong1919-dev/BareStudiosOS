@@ -9,11 +9,13 @@ const allServices = BARE_SERVICE_CATEGORIES.flatMap((category) =>
   category.services.map((service) => ({ ...service, category: category.name })),
 );
 
-const defaultCategory = "Facials";
+const defaultCategory = "Barbering";
 const defaultService = BARE_SERVICE_CATEGORIES.find((category) => category.name === defaultCategory)?.services[0] ?? allServices[0];
 
 function providerOptions(service: typeof allServices[number] | undefined) {
   if (!service) return ["First available"];
+  if (service.kind === "barber") return ["Andy"];
+  if (service.kind === "womensHair") return ["Cindy"];
   if (service.kind === "lashExtensions" || service.kind === "lash") return ["Ciara", "Na"];
   if (["facial", "body", "brow", "waxing", "addon"].includes(service.kind)) return ["Ciara"];
   return ["First available"];
@@ -22,7 +24,7 @@ function providerOptions(service: typeof allServices[number] | undefined) {
 export default function BareBookingFlow() {
   const [categoryName, setCategoryName] = useState(defaultCategory);
   const [serviceName, setServiceName] = useState(defaultService?.name || "");
-  const [artist, setArtist] = useState("Ciara");
+  const [artist, setArtist] = useState("Andy");
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredTime, setPreferredTime] = useState(BARE_TIME_SLOTS[0]);
   const [name, setName] = useState("");

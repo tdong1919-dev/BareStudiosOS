@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/ui/Modal";
 
-const week = ["Mon 6", "Tue 7", "Wed 8", "Thu 9", "Fri 10", "Sat 11", "Sun 12"];
 const times = ["7 AM", "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM", "12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM"];
 
 const appointments = [
@@ -22,10 +21,26 @@ const recommendations = [
   "Check retail history before checkout and offer replenishment.",
 ];
 const promotions = ["No promotion", "July facial glow: 10% off add-ons", "Lash refill loyalty reward", "Retail cleanser bundle"];
+const monthRows = [
+  ["June 28", "June 29", "June 30", "July 1", "July 2", "July 3", "July 4"],
+  ["July 5", "July 6", "July 7", "July 8", "July 9", "July 10", "July 11"],
+  ["July 12", "July 13", "July 14", "July 15", "July 16", "July 17", "July 18"],
+  ["July 19", "July 20", "July 21", "July 22", "July 23", "July 24", "July 25"],
+  ["July 26", "July 27", "July 28", "July 29", "July 30", "July 31", "August 1"],
+];
 
 type Slot = {
   day: string;
   time: string;
+};
+
+type ViewMode = "day" | "week" | "month";
+
+type SelectedDate = {
+  label: string;
+  day: number;
+  month: string;
+  index: number;
 };
 
 export default function InteractiveCalendar({
@@ -43,21 +58,39 @@ export default function InteractiveCalendar({
   const [selectedClient, setSelectedClient] = useState(clients[0]);
   const [selectedService, setSelectedService] = useState(services[0]);
   const [approvedRecommendations, setApprovedRecommendations] = useState(() => new Set(recommendations));
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [selectedDate, setSelectedDate] = useState<SelectedDate>({ label: "July 10", day: 10, month: "July", index: 12 });
   const slotTitle = useMemo(() => slot ? `${slot.day} at ${slot.time}` : "New appointment", [slot]);
+  const selectedWeekStart = Math.floor(selectedDate.index / 7) * 7;
+  const visibleWeek = useMemo(() => {
+    const flat = monthRows.flat();
+    return flat.slice(selectedWeekStart, selectedWeekStart + 7).map((label) => {
+      const [month, day] = label.split(" ");
+      const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][flat.indexOf(label) % 7];
+      return `${weekday} ${Number(day)}${month !== "July" ? ` (${month})` : ""}`;
+    });
+  }, [selectedWeekStart]);
+  const visibleDays = viewMode === "day" ? [selectedDate.label] : visibleWeek;
+  const calendarTitle = viewMode === "month"
+    ? "July 2026"
+    : viewMode === "day"
+      ? selectedDate.label
+      : `${visibleWeek[0]} - ${visibleWeek[visibleWeek.length - 1]}`;
 
   function openDay(day: string) {
     setSlot({ day, time: "Select time" });
   }
 
   useEffect(() => {
-    function openFromMiniCalendar(event: Event) {
-      const detail = (event as CustomEvent<Slot>).detail;
-      if (!detail?.day) return;
-      setSlot({ day: detail.day, time: detail.time || "Select time" });
+    function selectFromMiniCalendar(event: Event) {
+      const detail = (event as CustomEvent<SelectedDate>).detail;
+      if (!detail?.label) return;
+      setSelectedDate(detail);
+      setViewMode("day");
     }
 
-    window.addEventListener("bare-calendar-open-slot", openFromMiniCalendar);
-    return () => window.removeEventListener("bare-calendar-open-slot", openFromMiniCalendar);
+    window.addEventListener("bare-calendar-select-date", selectFromMiniCalendar);
+    return () => window.removeEventListener("bare-calendar-select-date", selectFromMiniCalendar);
   }, []);
 
   function toggleRecommendation(recommendation: string) {
@@ -73,14 +106,34 @@ export default function InteractiveCalendar({
     <section className="overflow-hidden bg-white">
       <div className="flex flex-col gap-3 border-b border-border px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <button className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white">Today</button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDate({ label: "July 10", day: 10, month: "July", index: 12 });
+              setViewMode("day");
+            }}
+            className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white"
+          >
+            Today
+          </button>
           <button className="rounded-md border border-border px-3 py-2 text-sm">‹</button>
           <button className="rounded-md border border-border px-3 py-2 text-sm">›</button>
-          <h2 className="text-lg font-semibold">Jul 6, 2026 - Jul 12, 2026</h2>
+          <h2 className="text-lg font-semibold">{calendarTitle}</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/clients" className="rounded-md border border-border px-4 py-2 text-sm">Customers: {clientsCount}</Link>
-          <Link href="/dashboard" className="rounded-md border border-border px-4 py-2 text-sm">Week</Link>
+          <div className="flex overflow-hidden rounded-md border border-border">
+            {(["day", "week", "month"] as ViewMode[]).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                className={`px-4 py-2 text-sm capitalize transition ${viewMode === mode ? "bg-[#30302f] text-white" : "bg-white hover:bg-surface-elevated"}`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
           <button onClick={() => setSlot({ day: "Today", time: "Next open time" })} className="rounded-md bg-[#30302f] px-4 py-2 text-sm font-medium text-white">Add appointment</button>
         </div>
       </div>
@@ -94,51 +147,93 @@ export default function InteractiveCalendar({
 
       <div className="overflow-auto">
         <div className="min-w-[980px]">
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border bg-white text-center text-sm font-medium">
-            <div className="border-r border-border p-3" />
-            {week.map((day) => (
-              <button
-                key={day}
-                type="button"
-                onClick={() => openDay(day)}
-                className="border-r border-border p-3 transition hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none last:border-r-0"
-                aria-label={`Add appointment on ${day}`}
-              >
-                {day}
-              </button>
-            ))}
-          </div>
-          <div className="relative grid grid-cols-[72px_repeat(7,1fr)]">
-            <div className="bg-[#fbfaf7]">
-              {times.map((time) => <div key={time} className="h-20 border-b border-r border-border p-2 text-right text-xs font-medium text-text-secondary">{time}</div>)}
-            </div>
-            {week.map((day) => (
-              <div key={day} className="border-r border-border last:border-r-0">
-                {times.map((time) => (
+          {viewMode === "month" ? (
+            <div className="grid grid-cols-7 border-l border-t border-border">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <div key={day} className="border-b border-r border-border bg-[#fbfaf7] p-3 text-center text-sm font-medium">{day}</div>
+              ))}
+              {monthRows.flat().map((label, index) => {
+                const muted = !label.startsWith("July");
+                const hasAppt = appointments.some((appt) => appt.day === index % 7 && Math.floor(index / 7) === 1);
+                return (
                   <button
-                    key={time}
+                    key={`${label}-${index}`}
                     type="button"
-                    onClick={() => setSlot({ day, time })}
-                    className="block h-20 w-full border-b border-border bg-white text-left transition hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none"
-                    aria-label={`Add appointment ${day} at ${time}`}
-                  />
+                    onClick={() => {
+                      const [month, day] = label.split(" ");
+                      setSelectedDate({ label, month, day: Number(day), index });
+                      setViewMode("day");
+                    }}
+                    className={`min-h-32 border-b border-r border-border p-3 text-left transition hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none ${muted ? "text-text-muted/50" : ""}`}
+                  >
+                    <span className="text-sm font-medium">{label.replace("July ", "")}</span>
+                    {hasAppt && <span className="mt-4 block rounded-md bg-[#ead9c3] p-2 text-xs text-text-primary">Appointments scheduled</span>}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              <div className={`grid border-b border-border bg-white text-center text-sm font-medium ${viewMode === "day" ? "grid-cols-[72px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]"}`}>
+                <div className="border-r border-border p-3" />
+                {visibleDays.map((day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => openDay(day)}
+                    className="border-r border-border p-3 transition hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none last:border-r-0"
+                    aria-label={`View schedule for ${day}`}
+                  >
+                    {day}
+                  </button>
                 ))}
               </div>
-            ))}
-            {appointments.map((appt) => (
-              <button
-                type="button"
-                onClick={() => setSlot({ day: week[appt.day], time: times[appt.row] })}
-                key={`${appt.day}-${appt.row}-${appt.client}`}
-                className={`absolute rounded-md border border-black/10 p-2 text-left text-xs shadow-sm ${appt.color}`}
-                style={{ left: `calc(72px + ((100% - 72px) / 7) * ${appt.day} + 8px)`, top: `${appt.row * 80 + 12}px`, width: "calc((100% - 72px) / 7 - 16px)", height: "64px" }}
-              >
-                <p className="font-semibold">{appt.title}</p>
-                <p>{appt.client}</p>
-                <p className="text-text-secondary">{appt.staff}</p>
-              </button>
-            ))}
-          </div>
+              <div className={`relative grid ${viewMode === "day" ? "grid-cols-[72px_1fr]" : "grid-cols-[72px_repeat(7,1fr)]"}`}>
+                <div className="bg-[#fbfaf7]">
+                  {times.map((time) => <div key={time} className="h-20 border-b border-r border-border p-2 text-right text-xs font-medium text-text-secondary">{time}</div>)}
+                </div>
+                {visibleDays.map((day) => (
+                  <div key={day} className="border-r border-border last:border-r-0">
+                    {times.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() => setSlot({ day, time })}
+                        className="block h-20 w-full border-b border-border bg-white text-left transition hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none"
+                        aria-label={`Add appointment ${day} at ${time}`}
+                      />
+                    ))}
+                  </div>
+                ))}
+                {viewMode === "week" && appointments.map((appt) => (
+                  <button
+                    type="button"
+                    onClick={() => setSlot({ day: visibleWeek[appt.day], time: times[appt.row] })}
+                    key={`${appt.day}-${appt.row}-${appt.client}`}
+                    className={`absolute rounded-md border border-black/10 p-2 text-left text-xs shadow-sm ${appt.color}`}
+                    style={{ left: `calc(72px + ((100% - 72px) / 7) * ${appt.day} + 8px)`, top: `${appt.row * 80 + 12}px`, width: "calc((100% - 72px) / 7 - 16px)", height: "64px" }}
+                  >
+                    <p className="font-semibold">{appt.title}</p>
+                    <p>{appt.client}</p>
+                    <p className="text-text-secondary">{appt.staff}</p>
+                  </button>
+                ))}
+                {viewMode === "day" && appointments.filter((appt) => visibleWeek[appt.day]?.includes(String(selectedDate.day))).map((appt) => (
+                  <button
+                    type="button"
+                    onClick={() => setSlot({ day: selectedDate.label, time: times[appt.row] })}
+                    key={`${appt.day}-${appt.row}-${appt.client}`}
+                    className={`absolute left-[88px] right-4 rounded-md border border-black/10 p-2 text-left text-xs shadow-sm ${appt.color}`}
+                    style={{ top: `${appt.row * 80 + 12}px`, height: "64px" }}
+                  >
+                    <p className="font-semibold">{appt.title}</p>
+                    <p>{appt.client}</p>
+                    <p className="text-text-secondary">{appt.staff}</p>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -2,10 +2,10 @@
 
 const days = [28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1];
 
-function openAppointment(day: number, index: number) {
+function selectDate(day: number, index: number) {
   const month = index < 3 ? "June" : index > 33 ? "August" : "July";
-  window.dispatchEvent(new CustomEvent("bare-calendar-open-slot", {
-    detail: { day: `${month} ${day}`, time: "Select time" },
+  window.dispatchEvent(new CustomEvent("bare-calendar-select-date", {
+    detail: { label: `${month} ${day}`, day, month, index },
   }));
 }
 
@@ -25,11 +25,11 @@ export default function MiniMonthCalendar() {
             <button
               key={`${day}-${index}`}
               type="button"
-              onClick={() => openAppointment(day, index)}
+              onClick={() => selectDate(day, index)}
               className={`rounded-full py-1 transition hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-[#30302f]/30 ${
                 today ? "bg-[#30302f] text-white hover:bg-[#30302f]" : muted ? "text-text-muted/50" : "text-text-secondary"
               }`}
-              aria-label={`Add appointment on ${muted && index < 3 ? "June" : muted ? "August" : "July"} ${day}`}
+              aria-label={`View schedule for ${muted && index < 3 ? "June" : muted ? "August" : "July"} ${day}`}
             >
               {day}
             </button>

@@ -76,14 +76,16 @@ function BookButton({ children = "Book an appointment", href = "/book" }: { chil
   );
 }
 
-function SalonImage({ label, src, className = "" }: { label: string; src: string; className?: string }) {
+function SalonImage({ label, src, className = "", showLabel = true }: { label: string; src: string; className?: string; showLabel?: boolean }) {
   return (
     <div className={`relative overflow-hidden rounded-md border border-border bg-linen ${className}`}>
       <Image src={src} alt={label} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-white/8" />
-      <div className="absolute inset-x-5 bottom-5 rounded-md border border-white/45 bg-white/72 p-4 backdrop-blur-sm">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">{label}</p>
-      </div>
+      {showLabel ? (
+        <div className="absolute inset-x-5 bottom-5 rounded-md border border-white/45 bg-white/72 p-4 backdrop-blur-sm">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">{label}</p>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -136,9 +138,9 @@ export default function BareStudiosHomePage() {
           <p className="mt-5 text-sm text-text-secondary">{BARE_STUDIOS.address} · {BARE_STUDIOS.phone}</p>
         </div>
         <div className="grid grid-cols-[0.75fr_1fr] gap-4">
-          <SalonImage label="Bare Studios" src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} className="aspect-[3/4] translate-y-10" />
+          <SalonImage label="Bare Studios storefront" src={`${IMAGE_BASE}/bare-studios-portrait.jpg`} className="aspect-[3/4] translate-y-10" showLabel={false} />
           <div className="space-y-4">
-            <SalonImage label="Facials + skin" src={`${IMAGE_BASE}/bare-studios-limited-time.jpeg`} className="aspect-[4/3]" />
+            <SalonImage label="Bare Studios facial treatment" src={`${IMAGE_BASE}/bare-studios-facial-treatment.png`} className="aspect-[4/3]" showLabel={false} />
             <div className="rounded-md border border-border bg-surface-elevated p-5">
               <p className="font-serif text-3xl font-medium">NOW HIRING</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">

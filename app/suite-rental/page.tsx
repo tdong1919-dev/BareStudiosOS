@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import PageShell from "@/components/marketing/PageShell";
 import { BARE_STUDIOS } from "@/lib/bare-studios";
 
@@ -9,7 +8,6 @@ export const metadata: Metadata = {
 
 export default function SuiteRentalPage() {
   const careersDigits = BARE_STUDIOS.careersPhone.replace(/[^0-9]/g, "");
-  const imageBase = "/images/bare-studios";
 
   return (
     <PageShell
@@ -20,10 +18,6 @@ export default function SuiteRentalPage() {
       publicPage
       wide
     >
-      <div className="relative mb-6 min-h-[320px] overflow-hidden rounded-xl border border-border bg-linen">
-        <Image src={`${imageBase}/bare-studios-hero.jpg`} alt="Bare Studios salon space" fill sizes="(max-width: 768px) 100vw, 900px" className="object-cover" />
-      </div>
-
       <div className="grid gap-5 md:grid-cols-[1fr_0.9fr]">
         <section className="rounded-xl border border-border bg-surface p-6">
           <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted">Contact Don</p>
